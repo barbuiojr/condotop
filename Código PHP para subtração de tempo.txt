@@ -1,0 +1,11 @@
+<?php
+                $h_entrada = new DateTime(datetime: $linha->hora_entrada);
+                $d_entrada = new DateTime($linha->data_entrada);
+                $h_intervalo = $agora->diff($h_entrada);
+                $d_intervalo = $agora->diff($d_entrada);
+                echo '<br>'.$h_intervalo->i.' '.$d_intervalo->d;
+?>
+
+
+
+https://www.alura.com.br/artigos/manipulando-datas-e-horarios-com-php

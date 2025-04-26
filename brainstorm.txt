@@ -1,0 +1,55 @@
+Nome do app:
+multihouse mult-house multihousing
+CondoSync
+CondoSmart
+VivaCondo
+GestCon
+CondoLink
+MinhaVizinhança
+CondoFácil
+SíndicoPro
+Condomínio360
+CondoManager
+PortalCondo
+Habita
+CondoSimplify
+ViverBem
+CondoUnity
+
+Morare
+GestHabitat
+VivaFácil
+Domus
+Síndico Fácil
+Habitar
+Espaço Livre
+GestãoViva
+Portaria+
+Morada
+Harmonia
+CasaPlena
+Unidade
+Vizinhança Pro
+Edifácil
+
+"Gestão simples, convivência harmoniosa."
+"Tudo o que seu condomínio precisa, na palma da mão."
+"Facilitando a vida em comunidade."
+"Organização e eficiência para sua gestão."
+"Simplifique sua gestão, transforme sua convivência."
+"Conexão e praticidade para o seu condomínio."
+"Gerencie com facilidade, viva com tranquilidade."
+"Comunidade organizada, vida melhor."
+"O jeito fácil de gerenciar e viver bem."
+"Unindo vizinhos, otimizando gestão."
+
+"Gestão eficiente, comunidade tranquila."
+"Simplifique a administração, maximize o bem-estar."
+"Sua gestão de condomínios mais fácil do que nunca."
+"Conectando moradores e síndicos com praticidade."
+"Tudo o que seu condomínio precisa, em um só lugar."
+"Organização e harmonia na palma da sua mão."
+"Transformando a gestão de condomínios em algo descomplicado."
+"Gerencie com agilidade, viva com tranquilidade."
+"Facilitando a convivência e a administração do seu espaço."
+"Gestão de condomínios simplificada para todos."

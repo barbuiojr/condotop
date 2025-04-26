@@ -1,0 +1,23 @@
+Funcionalidades iniciais:
+
+Leitor de QR Code (convidados). Opções de abertura do portão de pedestre ou veículo. Ao ler o QR Code, o aplicativo gera uma mensagem avisando que aquele convidado/visitante chegou.
+
+Agendamento de mudança (entrada e saída)
+
+Aquisição de controles e tags
+
+Agendamento de uso de áreas comuns 
+
+Mural de avisos
+
+Acesso ao CFTV 
+
+Divulgação de documentos 
+
+Central de reclamações para moradores.
+
+Enquetes
+
+Disponibilizar pagamento de taxas
+
+Liberação de entrada de Uber com aviso automático para portaria de condomínios horizontais.

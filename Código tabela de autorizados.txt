@@ -1,0 +1,39 @@
+<table>
+                <tr>
+                    <th>Morador</th>
+                    <th>Casa</th>
+                    <th>Veículo</th>
+                    <th>Placa</th>
+                    <th>Dt. Autorização</th>
+                    <th>Hr. Autorização</th>
+                    <th>Conf. Entrada</th>
+                </tr>
+                <?php foreach ($acesso as $linha) { ?>
+                <tr>
+                    <td><?php echo $linha->nome; ?></td>
+                    <td><?php echo $linha->uh; ?></td>
+                    <td><?php echo $linha->veiculo; ?></td>
+                    <td><?php echo $linha->placa; ?></td>
+                    <?php
+                    $d_autorizacao = new DateTime($linha->data_autorizacao);
+                    // echo $d_autorizacao->format('d/m/Y').'<br>';
+                    $d_autor_intervalo = $agora->diff($d_autorizacao);
+                    if($d_autor_intervalo->d >=1){
+                        $limpa = $acessoModel->remove_lista($linha->id);
+                    }
+                    ?>
+                    <?php $linha->data_autorizacao = implode("/", array_reverse(explode("-",$linha->data_autorizacao)))?>
+                    <td><?php echo $linha->data_autorizacao; ?></td>
+                    <td><?php echo $linha->hora_autorizacao; ?></td>
+                    <td class="botao">
+                        <form action="../altera_status.php" method="POST">
+                            <input type="hidden" name="id" value="<?php echo $linha->id ?>">
+                            <input type="hidden" name="entrada_ok" value=0>
+                            <button>
+                            <img src="../assets/img/checkbox.png" alt="" width="15px"></td>
+                            </button>
+                        </form>
+                    <?php } ?>
+                </tr>
+                
+            </table>

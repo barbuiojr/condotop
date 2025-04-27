@@ -1,4 +1,0 @@
-<?php
-header('Content-type: application/json'); // Cabeçalho declarando que todo o conteúdo será json
-$dadosEnviados = file_get_contents('php://input'); // Verificar o que faz esse método
-$dadosEnviados = json_decode($dadosEnviados, true); // Converte a variável em json

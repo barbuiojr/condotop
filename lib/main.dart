@@ -1,4 +1,6 @@
 // import 'package:device_preview/device_preview.dart';
+import 'package:condotop/views/login.dart';
+import 'package:condotop/views/solicitacao_uber.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'views/splash_screen.dart';
@@ -17,7 +19,7 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitDown,
     ]);
     return const MaterialApp(
-      home: SplashScreen(),
+      home: SolicitacaoUber(),
     );
   }
 }

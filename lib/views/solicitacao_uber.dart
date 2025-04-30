@@ -26,7 +26,7 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
                   height: MediaQuery.of(context).size.height * 0.2,
                   color: Color.fromARGB(225, 0, 68, 170),
                   child: Image.asset(
-                    'assets/logo/logo_condotop.png',
+                    'assets/logo/logo_condotop_bg.png',
                   ),
                 ),
                 Container(

@@ -1,4 +1,5 @@
 // import 'package:device_preview/device_preview.dart';
+import 'package:condotop/views/dashboar.dart';
 import 'package:condotop/views/login.dart';
 import 'package:condotop/views/solicitacao_uber.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,8 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitDown,
     ]);
     return const MaterialApp(
-      home: SolicitacaoUber(),
+      home: Dashboard(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

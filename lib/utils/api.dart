@@ -1,24 +1,34 @@
 import 'package:dio/dio.dart';
+import 'package:condotop/utils/session_service.dart';
+import 'package:condotop/views/login.dart';
+import 'package:flutter/material.dart';
 
 class ApiService {
   final Dio dio = Dio(BaseOptions(
     baseUrl: "http://localhost:8000/api",
-    connectTimeout: Duration(seconds: 10),
-    receiveTimeout: Duration(seconds: 10),
-    headers: {
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+    headers: const {
       "Content-Type": "application/json",
     },
   ));
 
+  static GlobalKey<NavigatorState>? navigatorKey;
+  final SessionService _sessionService = SessionService();
+
   ApiService() {
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
           print("➡️ Enviando requisição: ${options.method} ${options.path}");
 
-          // Exemplo: adicionar token automaticamente
-          final token = "seu_token_de_preferencia";
-          options.headers["Authorization"] = "Bearer $token";
+          // Não adicionar token na rota de login
+          if (!options.path.contains('/auth/login')) {
+            final token = _sessionService.getToken();
+            if (token != null && token.isNotEmpty) {
+              options.headers["Authorization"] = "Bearer $token";
+            }
+          }
 
           return handler.next(options);
         },
@@ -26,12 +36,20 @@ class ApiService {
           print("⬅️ Resposta recebida: ${response.statusCode}");
           return handler.next(response);
         },
-        onError: (error, handler) {
+        onError: (error, handler) async {
           print("❌ Erro: ${error.response?.statusCode}");
 
-          // Exemplo: se token expirou → redireciona para login
+          // Se token expirou → limpar sessão e redirecionar para login
           if (error.response?.statusCode == 401) {
-            // lógica de refresh token ou redirect
+            _sessionService.clearSession();
+            
+            // Redirecionar para login se tiver navigator key
+            if (navigatorKey?.currentContext != null) {
+              navigatorKey!.currentState?.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const Login()),
+                (route) => false,
+              );
+            }
           }
 
           return handler.next(error);

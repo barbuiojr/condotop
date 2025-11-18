@@ -1,7 +1,7 @@
 import 'package:condotop/components/card_dashboard.dart';
+import 'package:condotop/utils/session_service.dart';
+import 'package:condotop/views/solicitacao_uber.dart';
 import 'package:flutter/material.dart';
-
-import '../utils/api.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -11,24 +11,15 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  final api = ApiService();
-
-  Future carregarDados() async {
-    final resposta = await api.get("/acessos");
-    print(resposta.data);
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-
-    carregarDados();
-
-    super.initState();
-  }
+  final SessionService _session = SessionService();
 
   @override
   Widget build(BuildContext context) {
+    // Exemplo: Obter informações da sessão
+    final userName = _session.getUserName() ?? 'Usuário';
+    final userEmail = _session.getUserEmail();
+    final userId = _session.getUserId();
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 255, 102, 1),
@@ -39,6 +30,11 @@ class _DashboardState extends State<Dashboard> {
               color: Color.fromARGB(255, 204, 204, 204),
               fontWeight: FontWeight.w600),
         ),
+        // Exemplo: Adicionar ações no AppBar com informações da sessão
+        actions: [
+          // Você pode adicionar um ícone de perfil ou menu aqui
+          // que mostra as informações do usuário
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -52,33 +48,37 @@ class _DashboardState extends State<Dashboard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  CardDashboard(
-                      Icons.qr_code_2_outlined, "Autorizar\nvisitante"),
-                  CardDashboard(Icons.deck_outlined, "Reserva de\nÁrea comum"),
+                  CardDashboard(Icons.qr_code_2_outlined,
+                      "Autorizar\nvisitante", SolicitacaoUber()),
+                  CardDashboard(Icons.deck_outlined, "Reserva de\nÁrea comum",
+                      SolicitacaoUber()),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  CardDashboard(Icons.handyman_outlined, "Informar\nDefeito"),
-                  CardDashboard(Icons.comment_sharp, "Registrar\nReclamação"),
+                  CardDashboard(Icons.handyman_outlined, "Informar\nDefeito",
+                      SolicitacaoUber()),
+                  CardDashboard(Icons.comment_sharp, "Registrar\nReclamação",
+                      SolicitacaoUber()),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  CardDashboard(
-                      Icons.emoji_transportation_outlined, "Autorizar\nUber"),
-                  CardDashboard(
-                      Icons.event_available_outlined, "Agendar\nMudança"),
+                  CardDashboard(Icons.emoji_transportation_outlined,
+                      "Autorizar\nUber", SolicitacaoUber()),
+                  CardDashboard(Icons.event_available_outlined,
+                      "Agendar\nMudança", SolicitacaoUber()),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   CardDashboard(Icons.settings_remote_outlined,
-                      "Solicitar Tag\nou Controle"),
-                  CardDashboard(Icons.folder_outlined, "Documentos\nGerais"),
+                      "Solicitar Tag\nou Controle", SolicitacaoUber()),
+                  CardDashboard(Icons.folder_outlined, "Documentos\nGerais",
+                      SolicitacaoUber()),
                 ],
               ),
               Row(

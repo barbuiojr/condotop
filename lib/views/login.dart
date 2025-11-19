@@ -57,215 +57,211 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final blueColor = const Color.fromARGB(225, 0, 68, 170);
+    final orangeColor = const Color.fromARGB(255, 255, 102, 1);
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.zero,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // ---------- TOPO ----------
-                      Container(
-                        height: size.height * 0.42,
-                        child: Stack(
-                          alignment: Alignment.topCenter,
-                          children: [
-                            // FUNDO AZUL
+      backgroundColor: Colors.grey.shade50,
+      resizeToAvoidBottomInset: false,
+      body: SafeArea(
+        bottom: true,
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
+              children: [
+                // ---------- LOGO ----------
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: constraints.maxHeight * 0.08,
+                    bottom: constraints.maxHeight * 0.03,
+                  ),
+                  child: Image.asset(
+                    "assets/logo/logo_condotop.png",
+                    height: constraints.maxHeight * 0.18,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+
+                // ---------- FORMULÁRIO MODERNO ----------
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Título do formulário
+                          const Text(
+                            "Entrar",
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1A1A),
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Acesse sua conta",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Mensagem de erro
+                          if (_errorMessage != null)
                             Container(
-                              width: double.infinity,
-                              height: size.height * 0.30,
-                              decoration: const BoxDecoration(
-                                color: Color.fromARGB(225, 0, 68, 170),
-                                borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(20),
-                                  bottomRight: Radius.circular(20),
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.red.shade200,
+                                  width: 1.5,
                                 ),
                               ),
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.only(top: 40),
-                              child: const Text(
-                                "Bem-vindo ao",
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-
-                            // LOGO
-                            Positioned(
-                              bottom: size.height * 0.02,
-                              child: Image.asset(
-                                "assets/logo/logo_condotop.png",
-                                height: 180,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // ---------- FORMULÁRIO ----------
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Mensagem de erro
-                              if (_errorMessage != null)
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 14),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.shade50,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border:
-                                        Border.all(color: Colors.red.shade300),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.error_outline_rounded,
+                                    color: Colors.red.shade700,
+                                    size: 18,
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.error_outline,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _errorMessage!,
+                                      style: TextStyle(
                                         color: Colors.red.shade700,
-                                        size: 20,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: TextStyle(
-                                            color: Colors.red.shade700,
-                                            fontSize: 14,
-                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          // Campo Usuário
+                          _buildInput(
+                            controller: _usernameController,
+                            hint: "Usuário",
+                            icon: Icons.person_outline_rounded,
+                            obscure: false,
+                            color: blueColor,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor, insira seu usuário';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Campo Senha
+                          _buildInput(
+                            controller: _passwordController,
+                            hint: "Senha",
+                            icon: Icons.lock_outline_rounded,
+                            obscure: true,
+                            color: blueColor,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor, insira sua senha';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Botão Entrar
+                          SizedBox(
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _handleLogin,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _isLoading
+                                    ? Colors.grey.shade400
+                                    : orangeColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: _isLoading ? 0 : 4,
+                                shadowColor: orangeColor.withOpacity(0.4),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-
-                              // Usuário
-                              _buildInput(
-                                controller: _usernameController,
-                                hint: "Usuário",
-                                obscure: false,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Por favor, insira seu usuário';
-                                  }
-                                  return null;
-                                },
-                              ),
-
-                              // Senha
-                              _buildInput(
-                                controller: _passwordController,
-                                hint: "Senha",
-                                obscure: true,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Por favor, insira sua senha';
-                                  }
-                                  return null;
-                                },
-                              ),
-
-                              // BOTÃO ENTRAR
-                              SizedBox(
-                                height: 50,
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: _isLoading ? null : _handleLogin,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: _isLoading
-                                        ? Colors.grey
-                                        : const Color.fromARGB(
-                                            255, 255, 102, 1),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    elevation: _isLoading ? 0 : 3,
-                                    shadowColor: Colors.black.withOpacity(0.2),
-                                  ),
-                                  child: _isLoading
-                                      ? const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
-                                          ),
-                                        )
-                                      : const Text(
+                                    )
+                                  : const Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.login_rounded,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
                                           "Entrar",
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 18,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.5,
                                           ),
                                         ),
-                                ),
-                              ),
+                                      ],
+                                    ),
+                            ),
+                          ),
 
-                              const SizedBox(height: 12),
+                          const SizedBox(height: 12),
 
-                              GestureDetector(
-                                onTap: () {},
-                                child: const Text(
+                          // Link Cadastrar-se
+                          Center(
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
                                   "Cadastrar-se",
                                   style: TextStyle(
-                                    color: Color.fromARGB(225, 0, 68, 170),
-                                    fontWeight: FontWeight.bold,
+                                    color: blueColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                     decoration: TextDecoration.underline,
+                                    decorationColor: blueColor,
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ]),
-
-                // ---------- RODAPÉ ----------
-                // Stack(
-                //   alignment: Alignment.bottomCenter,
-                //   children: [
-                //     Container(
-                //       width: double.infinity,
-                //       height: size.height * 0.13,
-                //       decoration: BoxDecoration(
-                //         color: const Color.fromARGB(255, 255, 102, 1),
-                //         borderRadius: const BorderRadius.only(
-                //           topLeft: Radius.circular(20),
-                //           topRight: Radius.circular(20),
-                //         ),
-                //       ),
-                //     ),
-                //     Positioned(
-                //       bottom: size.height * 0.02,
-                //       child: Image.asset(
-                //         "assets/logo/logo_ss.png",
-                //         height: 100,
-                //       ),
-                //     ),
-                //   ],
-                // ),
-              ),
-            ),
-          );
-        },
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -273,24 +269,66 @@ class _LoginState extends State<Login> {
   Widget _buildInput({
     required TextEditingController controller,
     required String hint,
+    required IconData icon,
     required bool obscure,
+    required Color color,
     String? Function(String?)? validator,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.black54),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextFormField(
         controller: controller,
         obscureText: obscure,
         validator: validator,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
         decoration: InputDecoration(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          border: InputBorder.none,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(
+              color: Colors.grey.shade200,
+              width: 1.5,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(
+              color: color,
+              width: 2,
+            ),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           hintText: hint,
+          hintStyle: TextStyle(
+            color: Colors.grey.shade400,
+            fontSize: 15,
+          ),
+          prefixIcon: Icon(
+            icon,
+            color: color,
+            size: 22,
+          ),
         ),
       ),
     );

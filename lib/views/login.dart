@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:condotop/utils/auth_service.dart';
 import 'package:condotop/views/dashboar.dart';
+import 'package:condotop/views/cadastro.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -25,32 +26,46 @@ class _LoginState extends State<Login> {
   }
 
   Future<void> _handleLogin() async {
+    // Limpar mensagem de erro anterior
+    setState(() {
+      _errorMessage = null;
+    });
+
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
 
-      final result = await _authService.login(
-        _usernameController.text.trim(),
-        _passwordController.text,
-      );
+      try {
+        final result = await _authService.login(
+          _usernameController.text.trim(),
+          _passwordController.text,
+        );
 
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (result['success'] == true) {
-        // Redirecionar para dashboard
         if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const Dashboard()),
-          );
+          setState(() {
+            _isLoading = false;
+          });
+
+          if (result['success'] == true) {
+            // Redirecionar para dashboard
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const Dashboard()),
+            );
+          } else {
+            setState(() {
+              _errorMessage = result['message'] ?? 'Erro ao fazer login';
+            });
+          }
         }
-      } else {
-        setState(() {
-          _errorMessage = result['message'] ?? 'Erro ao fazer login';
-        });
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'Erro ao fazer login. Tente novamente.';
+          });
+        }
       }
     }
   }
@@ -237,7 +252,13 @@ class _LoginState extends State<Login> {
                           // Link Cadastrar-se
                           Center(
                             child: GestureDetector(
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const Cadastro(),
+                                  ),
+                                );
+                              },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 8),
                                 child: Text(

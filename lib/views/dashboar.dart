@@ -1,6 +1,12 @@
 import 'package:condotop/components/card_dashboard.dart';
 import 'package:condotop/utils/session_service.dart';
+import 'package:condotop/views/agendar_mudanca.dart';
+import 'package:condotop/views/autorizar_visitante.dart';
+import 'package:condotop/views/documentos_gerais.dart';
+import 'package:condotop/views/informar_defeito.dart';
+import 'package:condotop/views/registrar_reclamacao.dart';
 import 'package:condotop/views/solicitacao_uber.dart';
+import 'package:condotop/views/solicitar_tag_controle.dart';
 import 'package:flutter/material.dart';
 
 class Dashboard extends StatefulWidget {
@@ -19,7 +25,7 @@ class _DashboardState extends State<Dashboard> {
     final userName = _session.getUserName() ?? 'Usuário';
     final userEmail = _session.getUserEmail();
     final userId = _session.getUserId();
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 255, 102, 1),
@@ -48,19 +54,31 @@ class _DashboardState extends State<Dashboard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  CardDashboard(Icons.qr_code_2_outlined,
-                      "Autorizar\nvisitante", SolicitacaoUber()),
-                  CardDashboard(Icons.deck_outlined, "Reserva de\nÁrea comum",
-                      SolicitacaoUber()),
+                  CardDashboard(
+                    Icons.qr_code_2_outlined,
+                    "Autorizar\nvisitante",
+                    AutorizarVisitante(),
+                  ),
+                  CardDashboard(
+                    Icons.deck_outlined,
+                    "Reserva de\nÁrea comum",
+                    SolicitacaoUber(),
+                  ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  CardDashboard(Icons.handyman_outlined, "Informar\nDefeito",
-                      SolicitacaoUber()),
-                  CardDashboard(Icons.comment_sharp, "Registrar\nReclamação",
-                      SolicitacaoUber()),
+                  CardDashboard(
+                    Icons.handyman_outlined,
+                    "Informar\nDefeito",
+                    InformarDefeito(),
+                  ),
+                  CardDashboard(
+                    Icons.comment_sharp,
+                    "Registrar\nReclamação",
+                    RegistrarReclamacao(),
+                  ),
                 ],
               ),
               Row(
@@ -69,16 +87,16 @@ class _DashboardState extends State<Dashboard> {
                   CardDashboard(Icons.emoji_transportation_outlined,
                       "Autorizar\nUber", SolicitacaoUber()),
                   CardDashboard(Icons.event_available_outlined,
-                      "Agendar\nMudança", SolicitacaoUber()),
+                      "Agendar\nMudança", AgendarMudanca()),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   CardDashboard(Icons.settings_remote_outlined,
-                      "Solicitar Tag\nou Controle", SolicitacaoUber()),
+                      "Solicitar Tag\nou Controle", SolicitarTagControle()),
                   CardDashboard(Icons.folder_outlined, "Documentos\nGerais",
-                      SolicitacaoUber()),
+                      DocumentosGerais()),
                 ],
               ),
               Row(

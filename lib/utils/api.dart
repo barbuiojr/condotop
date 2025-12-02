@@ -22,8 +22,10 @@ class ApiService {
         onRequest: (options, handler) async {
           print("➡️ Enviando requisição: ${options.method} ${options.path}");
 
-          // Não adicionar token na rota de login
-          if (!options.path.contains('/auth/login')) {
+          // Não adicionar token nas rotas de login e cadastro
+          if (!options.path.contains('/auth/login') && 
+              !options.path.contains('/moradores/cadastro') &&
+              !options.path.contains('/condominios')) {
             final token = _sessionService.getToken();
             if (token != null && token.isNotEmpty) {
               options.headers["Authorization"] = "Bearer $token";
@@ -40,15 +42,20 @@ class ApiService {
           print("❌ Erro: ${error.response?.statusCode}");
 
           // Se token expirou → limpar sessão e redirecionar para login
+          // Mas não redirecionar se já estiver na rota de login (evita loop e recarregamento)
           if (error.response?.statusCode == 401) {
-            _sessionService.clearSession();
+            final isLoginRoute = error.requestOptions.path.contains('/auth/login');
             
-            // Redirecionar para login se tiver navigator key
-            if (navigatorKey?.currentContext != null) {
-              navigatorKey!.currentState?.pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const Login()),
-                (route) => false,
-              );
+            if (!isLoginRoute) {
+              _sessionService.clearSession();
+              
+              // Redirecionar para login se tiver navigator key e não estiver na rota de login
+              if (navigatorKey?.currentContext != null) {
+                navigatorKey!.currentState?.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const Login()),
+                  (route) => false,
+                );
+              }
             }
           }
 

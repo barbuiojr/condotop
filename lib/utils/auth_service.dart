@@ -76,12 +76,52 @@ class AuthService {
     } catch (e) {
       String errorMessage = 'Erro ao fazer login';
       
-      if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
-        errorMessage = 'Usuário ou senha inválidos';
-      } else if (e.toString().contains('Network')) {
-        errorMessage = 'Erro de conexão. Verifique sua internet';
-      } else if (e.toString().contains('timeout')) {
-        errorMessage = 'Tempo de conexão esgotado';
+      // Debug: imprimir erro completo
+      print('❌ Erro no login: $e');
+      
+      // Tentar extrair mensagem de erro da resposta da API
+      try {
+        if (e.toString().contains('DioException')) {
+          final errorResponse = (e as dynamic).response;
+          if (errorResponse != null) {
+            print('📦 Status code: ${errorResponse.statusCode}');
+            print('📦 Error data: ${errorResponse.data}');
+            
+            if (errorResponse.data != null) {
+              final errorData = errorResponse.data;
+              
+              // Verificar se tem a mensagem de usuário não ativado
+              if (errorData is Map) {
+                if (errorData['detail'] != null) {
+                  errorMessage = errorData['detail'].toString();
+                  print('✅ Mensagem extraída (detail): $errorMessage');
+                } else if (errorData['message'] != null) {
+                  errorMessage = errorData['message'].toString();
+                  print('✅ Mensagem extraída (message): $errorMessage');
+                } else if (errorData['error'] != null) {
+                  errorMessage = errorData['error'].toString();
+                  print('✅ Mensagem extraída (error): $errorMessage');
+                }
+              }
+            }
+          }
+        }
+      } catch (ex) {
+        print('⚠️ Erro ao extrair mensagem: $ex');
+        // Se não conseguir extrair, usar mensagens padrão
+      }
+      
+      // Mensagens padrão baseadas no código de status
+      if (errorMessage == 'Erro ao fazer login') {
+        if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+          errorMessage = 'Usuário ou senha inválidos';
+        } else if (e.toString().contains('403') || e.toString().contains('Forbidden')) {
+          errorMessage = 'Acesso negado';
+        } else if (e.toString().contains('Network')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet';
+        } else if (e.toString().contains('timeout')) {
+          errorMessage = 'Tempo de conexão esgotado';
+        }
       }
 
       return {

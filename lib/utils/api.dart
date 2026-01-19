@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class ApiService {
   final Dio dio = Dio(BaseOptions(
-    baseUrl: "http://localhost:8000/api",
+    baseUrl: "http://192.168.0.104:8000/api",
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
     headers: const {

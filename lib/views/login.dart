@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:condotop/utils/auth_service.dart';
 import 'package:condotop/views/dashboar.dart';
 import 'package:condotop/views/cadastro.dart';
+import 'package:condotop/utils/uber_notifier.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -49,6 +50,9 @@ class _LoginState extends State<Login> {
           });
 
           if (result['success'] == true) {
+            // Iniciar monitor global do Uber após login
+            UberNotifier.instance.start();
+
             // Redirecionar para dashboard
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const Dashboard()),

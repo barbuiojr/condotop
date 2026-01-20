@@ -5,6 +5,7 @@ import 'package:condotop/views/autorizar_visitante.dart';
 import 'package:condotop/views/documentos_gerais.dart';
 import 'package:condotop/views/informar_defeito.dart';
 import 'package:condotop/views/registrar_reclamacao.dart';
+import 'package:condotop/views/reserva_area_comum.dart';
 import 'package:condotop/views/solicitacao_uber.dart';
 import 'package:condotop/views/solicitar_tag_controle.dart';
 import 'package:flutter/material.dart';
@@ -60,8 +61,8 @@ class _DashboardState extends State<Dashboard> {
                     AutorizarVisitante(),
                   ),
                   CardDashboard(
-                    Icons.deck_outlined,
-                    "Reserva de\nÁrea comum",
+                    Icons.emoji_transportation_outlined,
+                    "Autorizar\nUber",
                     SolicitacaoUber(),
                   ),
                 ],
@@ -70,9 +71,9 @@ class _DashboardState extends State<Dashboard> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   CardDashboard(
-                    Icons.handyman_outlined,
-                    "Informar\nDefeito",
-                    InformarDefeito(),
+                    Icons.deck_outlined,
+                    "Reserva de\nÁrea comum",
+                    const ReservaAreaComum(),
                   ),
                   CardDashboard(
                     Icons.comment_sharp,
@@ -81,58 +82,70 @@ class _DashboardState extends State<Dashboard> {
                   ),
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  CardDashboard(Icons.emoji_transportation_outlined,
-                      "Autorizar\nUber", SolicitacaoUber()),
-                  CardDashboard(Icons.event_available_outlined,
-                      "Agendar\nMudança", AgendarMudanca()),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  CardDashboard(Icons.settings_remote_outlined,
-                      "Solicitar Tag\nou Controle", SolicitarTagControle()),
-                  CardDashboard(Icons.folder_outlined, "Documentos\nGerais",
-                      DocumentosGerais()),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    height: 100,
-                    child: Card(
-                      color: Color.fromARGB(255, 0, 68, 170),
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 12, bottom: 12),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.featured_play_list_outlined,
-                              color: Colors.white,
-                              size: 40,
-                            ),
-                            Text(
-                              "Mural",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //   children: [
+              //     CardDashboard(
+              //       Icons.event_available_outlined,
+              //       "Agendar\nMudança",
+              //       AgendarMudanca(),
+              //     ),
+              //     CardDashboard(
+              //       Icons.handyman_outlined,
+              //       "Informar\nDefeito",
+              //       InformarDefeito(),
+              //     ),
+              //   ],
+              // ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //   children: [
+              //     CardDashboard(
+              //       Icons.settings_remote_outlined,
+              //       "Solicitar Tag\nou Controle",
+              //       SolicitarTagControle(),
+              //     ),
+              //     CardDashboard(
+              //       Icons.folder_outlined,
+              //       "Documentos\nGerais",
+              //       DocumentosGerais(),
+              //     ),
+              //   ],
+              // ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     Container(
+              //       width: MediaQuery.of(context).size.width * 0.85,
+              //       height: 100,
+              //       child: Card(
+              //         color: Color.fromARGB(255, 0, 68, 170),
+              //         child: Padding(
+              //           padding: const EdgeInsets.only(top: 12, bottom: 12),
+              //           child: Column(
+              //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //             crossAxisAlignment: CrossAxisAlignment.center,
+              //             children: [
+              //               Icon(
+              //                 Icons.featured_play_list_outlined,
+              //                 color: Colors.white,
+              //                 size: 40,
+              //               ),
+              //               Text(
+              //                 "Mural",
+              //                 style: TextStyle(
+              //                   color: Colors.white,
+              //                   fontWeight: FontWeight.w500,
+              //                 ),
+              //                 textAlign: TextAlign.center,
+              //               ),
+              //             ],
+              //           ),
+              //         ),
+              //       ),
+              //     )
+              //   ],
+              // ),
             ],
           ),
         ),

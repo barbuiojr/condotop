@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class ApiService {
   final Dio dio = Dio(BaseOptions(
-    baseUrl: "http://192.168.0.104:8000/api",
+    baseUrl: "http://192.168.0.150:8000/api",
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
     headers: const {
@@ -23,7 +23,7 @@ class ApiService {
           print("➡️ Enviando requisição: ${options.method} ${options.path}");
 
           // Não adicionar token nas rotas de login e cadastro
-          if (!options.path.contains('/auth/login') && 
+          if (!options.path.contains('/auth/login') &&
               !options.path.contains('/moradores/cadastro') &&
               !options.path.contains('/condominios')) {
             final token = _sessionService.getToken();
@@ -44,11 +44,12 @@ class ApiService {
           // Se token expirou → limpar sessão e redirecionar para login
           // Mas não redirecionar se já estiver na rota de login (evita loop e recarregamento)
           if (error.response?.statusCode == 401) {
-            final isLoginRoute = error.requestOptions.path.contains('/auth/login');
-            
+            final isLoginRoute =
+                error.requestOptions.path.contains('/auth/login');
+
             if (!isLoginRoute) {
               _sessionService.clearSession();
-              
+
               // Redirecionar para login se tiver navigator key e não estiver na rota de login
               if (navigatorKey?.currentContext != null) {
                 navigatorKey!.currentState?.pushAndRemoveUntil(

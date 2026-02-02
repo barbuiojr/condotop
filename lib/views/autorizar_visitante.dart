@@ -80,6 +80,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
           'data_entrada': null,
           'hora_entrada': null,
           'validade': 1,
+          'data_hora_expiracao_qrcode': DateTime.now().add(Duration(minutes: 60 * 24)).toIso8601String(),
         };
 
         // Debug: imprimir o body

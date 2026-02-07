@@ -69,7 +69,15 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
 
           setState(() {
             _isLoading = false;
+            _descricaoController.clear();
           });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Reclamação cadastrada com sucesso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
 
           // Debug: imprimir o JSON gerado
           print('✅ Reclamação cadastrada com sucesso: $jsonString');
@@ -110,7 +118,7 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
     final orangeColor = const Color.fromARGB(255, 255, 102, 1);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: orangeColor,
+        backgroundColor: Color.fromARGB(225, 0, 68, 170),
         centerTitle: true,
         title: const Text(
           "Registrar Reclamação",

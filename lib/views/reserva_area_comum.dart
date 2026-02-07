@@ -26,7 +26,7 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: orangeColor,
+        backgroundColor: Color.fromARGB(225, 0, 68, 170),
         centerTitle: true,
         title: const Text(
           "Reserva de Área Comum",
@@ -56,7 +56,7 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
             // Calendário
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.red,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(

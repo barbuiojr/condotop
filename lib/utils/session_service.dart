@@ -41,6 +41,10 @@ class SessionService {
   String? getUserId() {
     return _userData?['id']?.toString() ?? _userData?['userId']?.toString();
   }
+  
+  String? getUserTipo() {
+    return _userData?['tipo']?.toString() ?? _userData?['tipo']?.toString();
+  }
 
   String? getUserEmail() {
     return _userData?['email'];

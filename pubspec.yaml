@@ -40,6 +40,7 @@ dependencies:
   share_plus: ^10.1.2
   url_launcher: ^6.3.1
   path_provider: ^2.1.5
+  crypto: ^3.0.3
   # shared_preferences: ^2.5.3
   # device_preview: ^1.2.0
 

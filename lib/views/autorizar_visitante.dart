@@ -11,7 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/utils/api.dart';
-
+import 'package:crypto/crypto.dart';
 class AutorizarVisitante extends StatefulWidget {
   const AutorizarVisitante({super.key});
 
@@ -79,8 +79,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
           'qrcode': qrcodeString,
           'data_entrada': null,
           'hora_entrada': null,
-          'validade': 1,
-          'data_hora_expiracao_qrcode': DateTime.now().add(Duration(minutes: 60 * 24)).toIso8601String(),
+          'validade': 1
         };
 
         // Debug: imprimir o body
@@ -92,9 +91,14 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
         if (response.statusCode == 200 || response.statusCode == 201) {
           // Criar JSON para o QR code (mesmo formato)
           final jsonString = jsonEncode(body);
+
+          // Gera o hash SHA-256
+          final bytes = utf8.encode(jsonString);
+          final digest = sha256.convert(bytes);
+          final sha256String = digest.toString();
           
           setState(() {
-            _qrCodeData = jsonString;
+            _qrCodeData = sha256String; // 🔐 agora criptografado (hash)
             _qrCodeString = qrcodeString;
             _isLoading = false;
           });
@@ -224,7 +228,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: orangeColor,
+        backgroundColor: Color.fromARGB(225, 0, 68, 170),
         centerTitle: true,
         title: const Text(
           "Autorizar Visitante",

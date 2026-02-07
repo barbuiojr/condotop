@@ -449,7 +449,7 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        backgroundColor: blueColor,
+        backgroundColor: Color.fromARGB(225, 0, 68, 170),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),

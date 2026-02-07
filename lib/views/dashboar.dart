@@ -26,6 +26,7 @@ class _DashboardState extends State<Dashboard> {
     final userName = _session.getUserName() ?? 'Usuário';
     final userEmail = _session.getUserEmail();
     final userId = _session.getUserId();
+    final userTipo = _session.getUserTipo();
 
     return Scaffold(
       appBar: AppBar(
@@ -33,12 +34,23 @@ class _DashboardState extends State<Dashboard> {
         centerTitle: true,
         title: Text(
           "Condotop",
-          style: TextStyle(
-              color: Color.fromARGB(255, 204, 204, 204),
-              fontWeight: FontWeight.w600),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         // Exemplo: Adicionar ações no AppBar com informações da sessão
         actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DocumentosGerais(),
+                  ),
+                );
+              },
+              icon: Icon(
+                Icons.person_outline,
+                color: Colors.white,
+              )),
           // Você pode adicionar um ícone de perfil ou menu aqui
           // que mostra as informações do usuário
         ],
@@ -80,6 +92,18 @@ class _DashboardState extends State<Dashboard> {
                     "Registrar\nReclamação",
                     RegistrarReclamacao(),
                   ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  userTipo == "S"
+                      ? CardDashboard(
+                          Icons.deck_outlined,
+                          "Reserva de\nÁrea comum",
+                          const ReservaAreaComum(),
+                        )
+                      : Container(),
                 ],
               ),
               // Row(

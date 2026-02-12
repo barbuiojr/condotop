@@ -8,10 +8,9 @@ import 'package:flutter/rendering.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:cross_file/cross_file.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/utils/api.dart';
-import 'package:crypto/crypto.dart';
+
 class AutorizarVisitante extends StatefulWidget {
   const AutorizarVisitante({super.key});
 
@@ -25,7 +24,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
   final _nomeController = TextEditingController();
   final _sessionService = SessionService();
   final _apiService = ApiService();
-  
+
   String? _qrCodeData;
   String? _qrCodeString;
   bool _isLoading = false;
@@ -38,7 +37,8 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
   }
 
   String _gerarStringAleatoria(int tamanho) {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();
     return String.fromCharCodes(
       Iterable.generate(
@@ -63,7 +63,8 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
         if (idMorador == null || idCondominio == null) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'Erro: Dados do usuário não encontrados. Faça login novamente.';
+            _errorMessage =
+                'Erro: Dados do usuário não encontrados. Faça login novamente.';
           });
           return;
         }
@@ -92,13 +93,10 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
           // Criar JSON para o QR code (mesmo formato)
           final jsonString = jsonEncode(body);
 
-          // Gera o hash SHA-256
-          final bytes = utf8.encode(jsonString);
-          final digest = sha256.convert(bytes);
-          final sha256String = digest.toString();
-          
+          dynamic jsonFinal = {'qrcode': qrcodeString, 'validade': 1};
+
           setState(() {
-            _qrCodeData = sha256String; // 🔐 agora criptografado (hash)
+            _qrCodeData = jsonFinal.toString(); // 🔐 agora criptografado (hash)
             _qrCodeString = qrcodeString;
             _isLoading = false;
           });
@@ -108,9 +106,9 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
         } else {
           setState(() {
             _isLoading = false;
-            _errorMessage = response.data['message'] ?? 
-                           response.data['error'] ?? 
-                           'Erro ao criar autorização de visitante';
+            _errorMessage = response.data['message'] ??
+                response.data['error'] ??
+                'Erro ao criar autorização de visitante';
           });
         }
       } catch (e) {
@@ -119,19 +117,19 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
           try {
             final errorData = (e as dynamic).response?.data;
             if (errorData != null && errorData is Map) {
-              errorMsg = errorData['message'] ?? 
-                        errorData['error'] ?? 
-                        errorData['detail'] ??
-                        errorMsg;
+              errorMsg = errorData['message'] ??
+                  errorData['error'] ??
+                  errorData['detail'] ??
+                  errorMsg;
             }
           } catch (_) {}
         }
-        
+
         setState(() {
           _isLoading = false;
           _errorMessage = errorMsg;
         });
-        
+
         print('❌ Erro ao gerar QR code: $e');
       }
     }
@@ -177,7 +175,8 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
       // Compartilhar a imagem
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'QR Code de Autorização de Visitante\n\nApresente este código na portaria.',
+        text:
+            'QR Code de Autorização de Visitante\n\nApresente este código na portaria.',
         subject: 'QR Code de Autorização',
       );
 
@@ -194,7 +193,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
       });
     } catch (e) {
       print('Erro ao compartilhar QR code: $e');
-      
+
       // Fechar loading se ainda estiver aberto
       if (mounted) {
         Navigator.of(context).pop();
@@ -248,7 +247,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              
+
               // Título
               const Text(
                 "QR Code de Autorização",
@@ -259,9 +258,9 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
                   color: Color(0xFF1A1A1A),
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               Text(
                 _qrCodeData == null
                     ? "Preencha o nome do visitante para gerar o QR code"
@@ -272,7 +271,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
                   color: Colors.grey.shade600,
                 ),
               ),
-              
+
               const SizedBox(height: 30),
 
               // Mensagem de erro
@@ -324,18 +323,17 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Botão Gerar QR Code
                 SizedBox(
                   height: 56,
                   child: ElevatedButton.icon(
                     onPressed: _isLoading ? null : _gerarQRCode,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _isLoading
-                          ? Colors.grey.shade400
-                          : orangeColor,
+                      backgroundColor:
+                          _isLoading ? Colors.grey.shade400 : orangeColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -417,9 +415,9 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Botão Compartilhar QR Code
                 SizedBox(
                   height: 56,
@@ -449,9 +447,9 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Botão Nova Autorização
                 SizedBox(
                   height: 56,

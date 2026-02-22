@@ -5,6 +5,7 @@ import 'package:condotop/views/documentos_gerais.dart';
 import 'package:condotop/views/registrar_reclamacao.dart';
 import 'package:condotop/views/reserva_area_comum.dart';
 import 'package:condotop/views/solicitacao_uber.dart';
+import 'package:condotop/views/validar_morador.dart';
 import 'package:flutter/material.dart';
 
 class Dashboard extends StatefulWidget {
@@ -96,9 +97,9 @@ class _DashboardState extends State<Dashboard> {
                 children: [
                   userTipo == "S"
                       ? CardDashboard(
-                          Icons.deck_outlined,
-                          "Reserva de\nÁrea comum",
-                          const ReservaAreaComum(),
+                          Icons.person_outline,
+                          "Validar\nMorador",
+                          const ValidarMorador(),
                         )
                       : Container(),
                 ],

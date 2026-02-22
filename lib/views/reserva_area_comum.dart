@@ -19,6 +19,28 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
   String? _successMessage;
   static const int _minMinute = 7 * 60; // 07:00
   static const int _maxMinute = 22 * 60; // 22:00
+  List<DateTime> datasBloqueadas = [];
+
+  buscaReservas() async {
+    final idCondominio = _sessionService.getIdCondominio();
+    try {
+      final response = await _apiService
+          .get('/reservas-area-comum/condominio/$idCondominio');
+      print("Reservas: ${response.data}");
+      datasBloqueadas = (response.data as List)
+          .map((reserva) => DateTime.parse(reserva['data_reserva']))
+          .toList();
+      setState(() {});
+      // Processar reservas conforme necessário
+    } catch (e) {
+      print("Erro ao buscar reservas: $e");
+    }
+  }
+
+  initState() {
+    super.initState();
+    buscaReservas();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +78,7 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
             // Calendário
             Container(
               decoration: BoxDecoration(
-                color: Colors.red,
+                // color: Colors.red,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -70,6 +92,12 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
                 initialDate: _selectedDate,
                 firstDate: DateTime.now(),
                 lastDate: DateTime.now().add(const Duration(days: 365)),
+                selectableDayPredicate: (DateTime day) {
+                  return !datasBloqueadas.any((data) =>
+                      data.year == day.year &&
+                      data.month == day.month &&
+                      data.day == day.day);
+                },
                 onDateChanged: (date) {
                   setState(() {
                     _selectedDate = date;
@@ -255,27 +283,27 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
 
                     // Hora início
                     Text(
-                      "Hora de início",
+                      "Hora de início: 07:00",
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade800,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    InkWell(
-                      onTap: selecionarHoraInicio,
-                      child: _buildTimeField(
-                        label: _formatarHora(horaInicio),
-                        icon: Icons.access_time,
-                      ),
-                    ),
+                    // const SizedBox(height: 4),
+                    // InkWell(
+                    //   onTap: selecionarHoraInicio,
+                    //   child: _buildTimeField(
+                    //     label: _formatarHora(horaInicio),
+                    //     icon: Icons.access_time,
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 12),
 
                     // Hora fim
                     Text(
-                      "Hora de fim",
+                      "Hora de fim: 22:00",
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -283,13 +311,13 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    InkWell(
-                      onTap: selecionarHoraFim,
-                      child: _buildTimeField(
-                        label: _formatarHora(horaFim),
-                        icon: Icons.access_time_filled,
-                      ),
-                    ),
+                    // InkWell(
+                    //   onTap: selecionarHoraFim,
+                    //   child: _buildTimeField(
+                    //     label: _formatarHora(horaFim),
+                    //     icon: Icons.access_time_filled,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -456,6 +484,7 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
         setState(() {
           _successMessage = 'Reserva registrada com sucesso!';
         });
+        // buscaReservas(); // Atualizar reservas para bloquear a data recém-reservada
       } else {
         setState(() {
           _errorMessage = 'Erro ao registrar reserva. Tente novamente.';

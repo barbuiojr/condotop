@@ -2,9 +2,12 @@
 import 'package:condotop/utils/api.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/views/dashboar.dart';
+import 'package:condotop/views/editar_perfil.dart';
 import 'package:condotop/views/login.dart';
+import 'package:condotop/views/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   // Configurar navigator key global para o interceptor
@@ -24,11 +27,23 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: ApiService.navigatorKey,
       debugShowCheckedModeBanner: false,
+      locale: const Locale('pt', 'BR'),
+      supportedLocales: const [
+        Locale('pt', 'BR'),
+        Locale('en', 'US'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       initialRoute: '/',
       routes: {
-        '/': (context) => const AuthCheck(),
+        '/': (context) => const SplashScreen(),
+        '/auth-check': (context) => const AuthCheck(),
         '/login': (context) => const Login(),
         '/dashboard': (context) => const Dashboard(),
+        '/editar-perfil': (context) => const EditarPerfil(),
       },
     );
   }
@@ -54,11 +69,12 @@ class _AuthCheckState extends State<AuthCheck> {
   Future<void> _checkAuth() async {
     final sessionService = SessionService();
     final isAuthenticated = sessionService.isAuthenticated();
-    
+
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => isAuthenticated ? const Dashboard() : const Login(),
+          builder: (context) =>
+              isAuthenticated ? const Dashboard() : const Login(),
         ),
       );
     }

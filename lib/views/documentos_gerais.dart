@@ -1,4 +1,5 @@
 import 'package:condotop/utils/session_service.dart';
+import 'package:condotop/views/editar_perfil.dart';
 import 'package:flutter/material.dart';
 
 class DocumentosGerais extends StatefulWidget {
@@ -34,6 +35,50 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SizedBox(
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const EditarPerfil(),
+                        ),
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isLoading
+                    ? Colors.grey.shade400
+                    : const Color.fromARGB(225, 0, 68, 170),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: _isLoading ? 0 : 4,
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.edit_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    "Editar perfil",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           SizedBox(
             height: 50,
             child: ElevatedButton(

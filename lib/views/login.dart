@@ -17,7 +17,28 @@ class _LoginState extends State<Login> {
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+  bool _rememberPassword = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedCredentials();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    final rememberedData = await _authService.getRememberedCredentials();
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _rememberPassword = rememberedData['remember'] == true;
+      _usernameController.text = rememberedData['username'] ?? '';
+      _passwordController.text = rememberedData['password'] ?? '';
+    });
+  }
 
   @override
   void dispose() {
@@ -39,6 +60,12 @@ class _LoginState extends State<Login> {
       });
 
       try {
+        await _authService.saveRememberedCredentials(
+          username: _usernameController.text.trim(),
+          password: _passwordController.text,
+          remember: _rememberPassword,
+        );
+
         final result = await _authService.login(
           _usernameController.text.trim(),
           _passwordController.text,
@@ -105,7 +132,8 @@ class _LoginState extends State<Login> {
                 // ---------- FORMULÁRIO MODERNO ----------
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 16.0),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -200,6 +228,33 @@ class _LoginState extends State<Login> {
                             },
                           ),
 
+                          const SizedBox(height: 8),
+
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: _rememberPassword,
+                                activeColor: blueColor,
+                                onChanged: _isLoading
+                                    ? null
+                                    : (value) {
+                                        setState(() {
+                                          _rememberPassword = value ?? false;
+                                        });
+                                      },
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Lembrar senha',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+
                           const SizedBox(height: 20),
 
                           // Botão Entrar
@@ -223,13 +278,15 @@ class _LoginState extends State<Login> {
                                       width: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.5,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
                                           Colors.white,
                                         ),
                                       ),
                                     )
                                   : const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.login_rounded,
@@ -264,7 +321,8 @@ class _LoginState extends State<Login> {
                                 );
                               },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
                                 child: Text(
                                   "Cadastrar-se",
                                   style: TextStyle(

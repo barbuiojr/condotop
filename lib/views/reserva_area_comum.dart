@@ -14,23 +14,96 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
   final _apiService = ApiService();
   final _sessionService = SessionService();
 
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = _stripTime(DateTime.now());
   String? _errorMessage;
   String? _successMessage;
   static const int _minMinute = 7 * 60; // 07:00
   static const int _maxMinute = 22 * 60; // 22:00
   List<DateTime> datasBloqueadas = [];
 
-  buscaReservas() async {
+  static DateTime _stripTime(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  bool _isDiaBloqueado(DateTime day) {
+    final normalized = _stripTime(day);
+    return datasBloqueadas.any((data) => data == normalized);
+  }
+
+  bool _isDiaBloqueadoNaLista(DateTime day, List<DateTime> bloqueadas) {
+    final normalized = _stripTime(day);
+    return bloqueadas.any((data) => data == normalized);
+  }
+
+  DateTime? _proximaDataDisponivel(DateTime startDate, DateTime lastDate) {
+    var cursor = _stripTime(startDate);
+    final end = _stripTime(lastDate);
+
+    while (!cursor.isAfter(end)) {
+      if (!_isDiaBloqueado(cursor)) {
+        return cursor;
+      }
+      cursor = cursor.add(const Duration(days: 1));
+    }
+
+    return null;
+  }
+
+  DateTime? _proximaDataDisponivelComLista(
+    DateTime startDate,
+    DateTime lastDate,
+    List<DateTime> bloqueadas,
+  ) {
+    var cursor = _stripTime(startDate);
+    final end = _stripTime(lastDate);
+
+    while (!cursor.isAfter(end)) {
+      if (!_isDiaBloqueadoNaLista(cursor, bloqueadas)) {
+        return cursor;
+      }
+      cursor = cursor.add(const Duration(days: 1));
+    }
+
+    return null;
+  }
+
+  Future<void> buscaReservas({bool ajustarDataSelecionada = true}) async {
     final idCondominio = _sessionService.getIdCondominio();
+    if (idCondominio == null) {
+      return;
+    }
+
     try {
       final response = await _apiService
           .get('/reservas-area-comum/condominio/$idCondominio');
       print("Reservas: ${response.data}");
-      datasBloqueadas = (response.data as List)
-          .map((reserva) => DateTime.parse(reserva['data_reserva']))
-          .toList();
-      setState(() {});
+      final reservas = (response.data as List)
+          .map((reserva) {
+            final dataTexto = (reserva['data_reserva'] ?? '').toString();
+            final parteData = dataTexto.split('T').first;
+            return DateTime.parse(parteData);
+          })
+          .map(_stripTime)
+          .toSet()
+          .toList()
+        ..sort((a, b) => a.compareTo(b));
+
+      if (!mounted) {
+        return;
+      }
+
+      final hoje = _stripTime(DateTime.now());
+      final ultimoDia = hoje.add(const Duration(days: 365));
+      final proximaDisponivel =
+          _proximaDataDisponivelComLista(hoje, ultimoDia, reservas);
+
+      setState(() {
+        datasBloqueadas = reservas;
+        if (ajustarDataSelecionada) {
+          _selectedDate = proximaDisponivel ?? hoje;
+        }
+      });
+
       // Processar reservas conforme necessário
     } catch (e) {
       print("Erro ao buscar reservas: $e");
@@ -44,7 +117,10 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
 
   @override
   Widget build(BuildContext context) {
-    final orangeColor = const Color.fromARGB(255, 255, 102, 1);
+    final firstDate = _stripTime(DateTime.now());
+    final lastDate = _stripTime(DateTime.now().add(const Duration(days: 365)));
+    final hasAvailableDate =
+        _proximaDataDisponivel(firstDate, lastDate) != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -76,36 +152,47 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
             const SizedBox(height: 8),
 
             // Calendário
-            Container(
-              decoration: BoxDecoration(
-                // color: Colors.red,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+            if (hasAvailableDate)
+              Container(
+                decoration: BoxDecoration(
+                  // color: Colors.red,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: CalendarDatePicker(
+                  initialDate: _selectedDate,
+                  firstDate: firstDate,
+                  lastDate: lastDate,
+                  selectableDayPredicate: (DateTime day) {
+                    return !_isDiaBloqueado(day);
+                  },
+                  onDateChanged: (date) {
+                    setState(() {
+                      _selectedDate = _stripTime(date);
+                    });
+                    _abrirDialogReserva(date);
+                  },
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: const Text(
+                  'Não há datas disponíveis para reserva no período.',
+                  textAlign: TextAlign.center,
+                ),
               ),
-              child: CalendarDatePicker(
-                initialDate: _selectedDate,
-                firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(const Duration(days: 365)),
-                selectableDayPredicate: (DateTime day) {
-                  return !datasBloqueadas.any((data) =>
-                      data.year == day.year &&
-                      data.month == day.month &&
-                      data.day == day.day);
-                },
-                onDateChanged: (date) {
-                  setState(() {
-                    _selectedDate = date;
-                  });
-                  _abrirDialogReserva(date);
-                },
-              ),
-            ),
 
             const SizedBox(height: 16),
 
@@ -469,6 +556,16 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
         return;
       }
 
+      // Verificar novamente no backend se o dia ainda está livre
+      await buscaReservas(ajustarDataSelecionada: false);
+      if (_isDiaBloqueado(dataEscolhida)) {
+        setState(() {
+          _errorMessage =
+              'Esta data já foi reservada por outro usuário. Selecione outro dia.';
+        });
+        return;
+      }
+
       final body = {
         "id_morador": idMorador,
         "id_condominio": idCondominio,
@@ -484,7 +581,7 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
         setState(() {
           _successMessage = 'Reserva registrada com sucesso!';
         });
-        // buscaReservas(); // Atualizar reservas para bloquear a data recém-reservada
+        await buscaReservas(); // Atualizar reservas para bloquear a data recém-reservada
       } else {
         setState(() {
           _errorMessage = 'Erro ao registrar reserva. Tente novamente.';

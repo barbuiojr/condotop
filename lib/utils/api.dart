@@ -24,8 +24,7 @@ class ApiService {
 
           // Não adicionar token nas rotas de login e cadastro
           if (!options.path.contains('/auth/login') &&
-              !options.path.contains('/moradores/cadastro') &&
-              !options.path.contains('/condominios')) {
+              !options.path.contains('/moradores/cadastro')) {
             final token = _sessionService.getToken();
             if (token != null && token.isNotEmpty) {
               options.headers["Authorization"] = "Bearer $token";

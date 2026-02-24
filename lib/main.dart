@@ -4,6 +4,7 @@ import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/views/dashboar.dart';
 import 'package:condotop/views/editar_perfil.dart';
 import 'package:condotop/views/login.dart';
+import 'package:condotop/views/redefinir_senha.dart';
 import 'package:condotop/views/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const Login(),
         '/dashboard': (context) => const Dashboard(),
         '/editar-perfil': (context) => const EditarPerfil(),
+        '/redefinir-senha': (context) => const RedefinirSenha(),
       },
     );
   }

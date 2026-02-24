@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Permitir acesso à câmera para atualizar a foto de perfil.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Permitir acesso à galeria para selecionar uma foto de perfil.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Permitir salvar a foto de perfil ajustada.</string>
 </dict>
 </plist>

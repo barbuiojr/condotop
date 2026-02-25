@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:condotop/utils/api.dart';
 import 'package:condotop/views/login.dart';
 
@@ -18,13 +19,13 @@ class _CadastroState extends State<Cadastro> {
   final _blocoController = TextEditingController();
   final _uhController = TextEditingController();
   final _senhaController = TextEditingController();
-  
+
   final _apiService = ApiService();
   bool _isLoading = false;
   bool _isLoadingCondominios = false;
   String? _errorMessage;
   String? _successMessage;
-  
+
   List<dynamic> _condominios = [];
   dynamic _condominioSelecionado;
 
@@ -54,7 +55,7 @@ class _CadastroState extends State<Cadastro> {
 
     try {
       final response = await _apiService.get('/condominios/');
-      
+
       if (response.statusCode == 200) {
         // Se a resposta for 200, mesmo que vazia, é sucesso
         setState(() {
@@ -105,14 +106,15 @@ class _CadastroState extends State<Cadastro> {
       });
 
       try {
-        final idCondominio = _condominioSelecionado['id'] ?? 
-                            _condominioSelecionado['id_condominio'] ?? 
-                            0;
-        
+        final idCondominio = _condominioSelecionado['id'] ??
+            _condominioSelecionado['id_condominio'] ??
+            0;
+
         final body = {
           'nome': _nomeController.text.trim(),
           'email': _emailController.text.trim(),
-          'telefone': _telefoneController.text.trim().replaceAll(RegExp(r'[^\d]'), ''),
+          'telefone':
+              _telefoneController.text.trim().replaceAll(RegExp(r'[^\d]'), ''),
           'cpf': _cpfController.text.trim().replaceAll(RegExp(r'[^\d]'), ''),
           'bloco': _blocoController.text.trim(),
           'uh': _uhController.text.trim(), // UH deve ser string, não número
@@ -135,7 +137,7 @@ class _CadastroState extends State<Cadastro> {
 
           // Aguardar um pouco e redirecionar para login
           await Future.delayed(const Duration(seconds: 2));
-          
+
           if (mounted) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const Login()),
@@ -143,9 +145,9 @@ class _CadastroState extends State<Cadastro> {
           }
         } else {
           setState(() {
-            _errorMessage = response.data['message'] ?? 
-                           response.data['error'] ?? 
-                           'Erro ao realizar cadastro';
+            _errorMessage = response.data['message'] ??
+                response.data['error'] ??
+                'Erro ao realizar cadastro';
             _isLoading = false;
           });
         }
@@ -155,13 +157,11 @@ class _CadastroState extends State<Cadastro> {
           try {
             final errorData = (e as dynamic).response?.data;
             if (errorData != null && errorData is Map) {
-              errorMsg = errorData['message'] ?? 
-                        errorData['error'] ?? 
-                        errorMsg;
+              errorMsg = errorData['message'] ?? errorData['error'] ?? errorMsg;
             }
           } catch (_) {}
         }
-        
+
         setState(() {
           _errorMessage = errorMsg;
           _isLoading = false;
@@ -335,6 +335,10 @@ class _CadastroState extends State<Cadastro> {
                   icon: Icons.badge_outlined,
                   color: blueColor,
                   keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    _CpfInputFormatter(),
+                  ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor, insira seu CPF';
@@ -356,6 +360,10 @@ class _CadastroState extends State<Cadastro> {
                   icon: Icons.phone_outlined,
                   color: blueColor,
                   keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    _TelefoneBrInputFormatter(),
+                  ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor, insira seu telefone';
@@ -426,7 +434,9 @@ class _CadastroState extends State<Cadastro> {
                 SizedBox(
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: (_isLoading || _isLoadingCondominios) ? null : _handleCadastro,
+                    onPressed: (_isLoading || _isLoadingCondominios)
+                        ? null
+                        : _handleCadastro,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: (_isLoading || _isLoadingCondominios)
                           ? Colors.grey.shade400
@@ -549,7 +559,9 @@ class _CadastroState extends State<Cadastro> {
           ),
         ),
         hint: Text(
-          _isLoadingCondominios ? 'Carregando condomínios...' : 'Selecione seu condomínio',
+          _isLoadingCondominios
+              ? 'Carregando condomínios...'
+              : 'Selecione seu condomínio',
           style: TextStyle(
             color: Colors.grey.shade400,
             fontSize: 15,
@@ -557,16 +569,19 @@ class _CadastroState extends State<Cadastro> {
         ),
         items: _condominios.map((condominio) {
           // Tentar diferentes campos possíveis para o nome
-          final nome = condominio['nome'] ?? 
-                      condominio['nome_condominio'] ?? 
-                      condominio['condominio'] ??
-                      condominio['descricao'] ??
-                      condominio['razao_social'] ??
-                      (condominio['id'] != null ? 'Condomínio ${condominio['id']}' : 'Condomínio');
-          
+          final nome = condominio['nome'] ??
+              condominio['nome_condominio'] ??
+              condominio['condominio'] ??
+              condominio['descricao'] ??
+              condominio['razao_social'] ??
+              (condominio['id'] != null
+                  ? 'Condomínio ${condominio['id']}'
+                  : 'Condomínio');
+
           // Debug: imprimir o nome extraído
-          print('🏢 Nome extraído do condomínio: $nome (campos disponíveis: ${condominio.keys.toList()})');
-          
+          print(
+              '🏢 Nome extraído do condomínio: $nome (campos disponíveis: ${condominio.keys.toList()})');
+
           return DropdownMenuItem<dynamic>(
             value: condominio,
             child: Text(
@@ -603,6 +618,7 @@ class _CadastroState extends State<Cadastro> {
     required Color color,
     bool obscure = false,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     return Container(
@@ -621,6 +637,7 @@ class _CadastroState extends State<Cadastro> {
         controller: controller,
         obscureText: obscure,
         keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         validator: validator,
         style: const TextStyle(
           fontSize: 15,
@@ -667,3 +684,91 @@ class _CadastroState extends State<Cadastro> {
   }
 }
 
+class _TelefoneBrInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > 11) {
+      digits = digits.substring(0, 11);
+    }
+
+    final buffer = StringBuffer();
+
+    if (digits.isNotEmpty) {
+      buffer.write('(');
+      buffer.write(digits.substring(0, digits.length >= 2 ? 2 : digits.length));
+
+      if (digits.length >= 2) {
+        buffer.write(')');
+      }
+    }
+
+    if (digits.length > 2) {
+      buffer.write(' ');
+      buffer.write(digits.substring(2, 3));
+    }
+
+    if (digits.length > 3) {
+      final end = digits.length >= 7 ? 7 : digits.length;
+      buffer.write(' ');
+      buffer.write(digits.substring(3, end));
+    }
+
+    if (digits.length > 7) {
+      buffer.write('-');
+      buffer.write(digits.substring(7));
+    }
+
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
+class _CpfInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > 11) {
+      digits = digits.substring(0, 11);
+    }
+
+    final buffer = StringBuffer();
+
+    if (digits.isNotEmpty) {
+      final first = digits.length >= 3 ? 3 : digits.length;
+      buffer.write(digits.substring(0, first));
+    }
+
+    if (digits.length > 3) {
+      final second = digits.length >= 6 ? 6 : digits.length;
+      buffer.write('.');
+      buffer.write(digits.substring(3, second));
+    }
+
+    if (digits.length > 6) {
+      final third = digits.length >= 9 ? 9 : digits.length;
+      buffer.write('.');
+      buffer.write(digits.substring(6, third));
+    }
+
+    if (digits.length > 9) {
+      buffer.write('-');
+      buffer.write(digits.substring(9));
+    }
+
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}

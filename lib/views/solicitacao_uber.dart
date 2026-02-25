@@ -444,8 +444,6 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
 
   @override
   Widget build(BuildContext context) {
-    final blueColor = const Color.fromARGB(225, 0, 68, 170);
-
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(

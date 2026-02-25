@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class CardDashboard extends StatelessWidget {
-  IconData icon;
-  String text;
-  Widget page;
+  final IconData icon;
+  final String text;
+  final Widget page;
 
   CardDashboard(this.icon, this.text, this.page, {super.key});
 

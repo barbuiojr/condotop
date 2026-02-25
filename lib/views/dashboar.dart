@@ -1,12 +1,10 @@
 import 'package:condotop/views/atas_docs.dart';
 import 'package:condotop/components/card_dashboard.dart';
-import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/views/autorizar_visitante.dart';
 import 'package:condotop/views/documentos_gerais.dart';
 import 'package:condotop/views/registrar_reclamacao.dart';
 import 'package:condotop/views/reserva_area_comum.dart';
 import 'package:condotop/views/solicitacao_uber.dart';
-import 'package:condotop/views/validar_morador.dart';
 import 'package:flutter/material.dart';
 
 class Dashboard extends StatefulWidget {
@@ -17,16 +15,12 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  final SessionService _session = SessionService();
-
   @override
   Widget build(BuildContext context) {
     // Exemplo: Obter informações da sessão
     // final userName = _session.getUserName() ?? 'Usuário';
     // final userEmail = _session.getUserEmail();
     // final userId = _session.getUserId();
-    final userTipo = _session.getUserTipo();
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 255, 102, 1),
@@ -96,13 +90,6 @@ class _DashboardState extends State<Dashboard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  userTipo == "S"
-                      ? CardDashboard(
-                          Icons.person_outline,
-                          "Validar\nMorador",
-                          const ValidarMorador(),
-                        )
-                      : Container(),
                   CardDashboard(
                     Icons.description_outlined,
                     "Atas/Docs",

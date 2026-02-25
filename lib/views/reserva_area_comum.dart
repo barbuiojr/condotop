@@ -1,4 +1,5 @@
 import 'package:condotop/utils/api.dart';
+import 'package:condotop/utils/app_snackbar.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +16,6 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
   final _sessionService = SessionService();
 
   DateTime _selectedDate = _stripTime(DateTime.now());
-  String? _errorMessage;
-  String? _successMessage;
   static const int _minMinute = 7 * 60; // 07:00
   static const int _maxMinute = 22 * 60; // 22:00
   List<DateTime> datasBloqueadas = [];
@@ -195,33 +194,19 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
               ),
 
             const SizedBox(height: 16),
-
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: Text(
-                  _errorMessage!,
-                  style: TextStyle(
-                    color: Colors.red.shade700,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            if (_successMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: Text(
-                  _successMessage!,
-                  style: TextStyle(
-                    color: Colors.green.shade700,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    if (isError) {
+      AppSnackbar.showError(context, message);
+      return;
+    }
+
+    AppSnackbar.showSuccess(context, message);
   }
 
   int _compararHoras(TimeOfDay hora1, TimeOfDay hora2) {
@@ -276,11 +261,9 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
                     final m = _toMinutes(picked);
                     horaInicio =
                         _fromMinutes(m < _minMinute ? _minMinute : _maxMinute);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                            Text('Horário permitido: ${_allowedRangeText()}'),
-                      ),
+                    AppSnackbar.showError(
+                      this.context,
+                      'Horário permitido: ${_allowedRangeText()}',
                     );
                   } else {
                     horaInicio = picked;
@@ -316,11 +299,9 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
                     final m = _toMinutes(novoFim);
                     novoFim =
                         _fromMinutes(m < _minMinute ? _minMinute : _maxMinute);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                            Text('Horário permitido: ${_allowedRangeText()}'),
-                      ),
+                    AppSnackbar.showError(
+                      this.context,
+                      'Horário permitido: ${_allowedRangeText()}',
                     );
                   }
 
@@ -329,11 +310,9 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
                     final adjusted = (_toMinutes(horaInicio) + 1)
                         .clamp(_minMinute, _maxMinute);
                     novoFim = _fromMinutes(adjusted);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'Hora de fim deve ser depois da hora de início'),
-                      ),
+                    AppSnackbar.showError(
+                      this.context,
+                      'Hora de fim deve ser depois da hora de início',
                     );
                   }
 
@@ -428,29 +407,23 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
 
                     if (minutosInicio < _minMinute ||
                         minutosInicio > _maxMinute) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Hora de início deve estar entre ${_allowedRangeText()}'),
-                        ),
+                      AppSnackbar.showError(
+                        this.context,
+                        'Hora de início deve estar entre ${_allowedRangeText()}',
                       );
                       return;
                     }
                     if (minutosFim < _minMinute || minutosFim > _maxMinute) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Hora de fim deve estar entre ${_allowedRangeText()}'),
-                        ),
+                      AppSnackbar.showError(
+                        this.context,
+                        'Hora de fim deve estar entre ${_allowedRangeText()}',
                       );
                       return;
                     }
                     if (minutosFim <= minutosInicio) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'Hora de fim deve ser depois da hora de início'),
-                        ),
+                      AppSnackbar.showError(
+                        this.context,
+                        'Hora de fim deve ser depois da hora de início',
                       );
                       return;
                     }
@@ -539,30 +512,25 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
 
   Future<void> _registrarReserva(
       DateTime horaInicio, DateTime horaFim, DateTime dataEscolhida) async {
-    setState(() {
-      _errorMessage = null;
-      _successMessage = null;
-    });
-
     try {
       final idMorador = _sessionService.getIdMorador();
       final idCondominio = _sessionService.getIdCondominio();
 
       if (idMorador == null || idCondominio == null) {
-        setState(() {
-          _errorMessage =
-              'Erro: Dados do usuário não encontrados. Faça login novamente.';
-        });
+        _showMessage(
+          'Erro: Dados do usuário não encontrados. Faça login novamente.',
+          isError: true,
+        );
         return;
       }
 
       // Verificar novamente no backend se o dia ainda está livre
       await buscaReservas(ajustarDataSelecionada: false);
       if (_isDiaBloqueado(dataEscolhida)) {
-        setState(() {
-          _errorMessage =
-              'Esta data já foi reservada por outro usuário. Selecione outro dia.';
-        });
+        _showMessage(
+          'Esta data já foi reservada por outro usuário. Selecione outro dia.',
+          isError: true,
+        );
         return;
       }
 
@@ -578,14 +546,11 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
       final response = await _apiService.post('/reservas-area-comum/', body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        setState(() {
-          _successMessage = 'Reserva registrada com sucesso!';
-        });
+        _showMessage('Reserva registrada com sucesso!');
         await buscaReservas(); // Atualizar reservas para bloquear a data recém-reservada
       } else {
-        setState(() {
-          _errorMessage = 'Erro ao registrar reserva. Tente novamente.';
-        });
+        _showMessage('Erro ao registrar reserva. Tente novamente.',
+            isError: true);
       }
     } catch (e) {
       String msg = 'Erro ao registrar reserva. Tente novamente.';
@@ -597,9 +562,7 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
           msg = data['error'].toString();
         }
       }
-      setState(() {
-        _errorMessage = msg;
-      });
+      _showMessage(msg, isError: true);
     }
   }
 }

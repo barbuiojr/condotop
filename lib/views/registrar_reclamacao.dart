@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:condotop/utils/api.dart';
+import 'package:condotop/utils/app_snackbar.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:flutter/material.dart';
 
@@ -72,12 +73,8 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
             _descricaoController.clear();
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Reclamação cadastrada com sucesso!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AppSnackbar.showSuccess(
+              context, 'Reclamação cadastrada com sucesso!');
 
           // Debug: imprimir o JSON gerado
           print('✅ Reclamação cadastrada com sucesso: $jsonString');

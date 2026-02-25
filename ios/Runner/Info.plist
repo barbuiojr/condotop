@@ -51,5 +51,10 @@
 	<string>Permitir acesso à galeria para selecionar uma foto de perfil.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Permitir salvar a foto de perfil ajustada.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

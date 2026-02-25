@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/utils/api.dart';
+import 'package:condotop/utils/app_snackbar.dart';
 
 class AutorizarVisitante extends StatefulWidget {
   const AutorizarVisitante({super.key});
@@ -201,12 +202,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
 
       // Mostrar erro
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao compartilhar QR code: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.showError(context, 'Erro ao compartilhar QR code: $e');
       }
     }
   }

@@ -4,10 +4,22 @@ import 'package:condotop/views/login.dart';
 import 'package:flutter/material.dart';
 
 class ApiService {
+  static const String _defaultBaseUrl = 'http://192.168.0.150:8000/api';
+  static const String _baseUrlFromEnv =
+      String.fromEnvironment('BASE_URL', defaultValue: _defaultBaseUrl);
+
+  static String get _resolvedBaseUrl {
+    if (_baseUrlFromEnv.endsWith('/')) {
+      return _baseUrlFromEnv.substring(0, _baseUrlFromEnv.length - 1);
+    }
+    return _baseUrlFromEnv;
+  }
+
   final Dio dio = Dio(BaseOptions(
-    baseUrl: "http://192.168.100.50:8000/api",
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
+    baseUrl: _resolvedBaseUrl,
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
+    sendTimeout: const Duration(seconds: 30),
     headers: const {
       "Content-Type": "application/json",
     },
@@ -20,7 +32,7 @@ class ApiService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          print("➡️ Enviando requisição: ${options.method} ${options.path}");
+          print("➡️ Enviando requisição: ${options.method} ${options.uri}");
 
           // Não adicionar token nas rotas de login e cadastro
           if (!options.path.contains('/auth/login') &&
@@ -38,7 +50,9 @@ class ApiService {
           return handler.next(response);
         },
         onError: (error, handler) async {
-          print("❌ Erro: ${error.response?.statusCode}");
+          print(
+            "❌ Erro: status=${error.response?.statusCode} tipo=${error.type} msg=${error.message}",
+          );
 
           // Se token expirou → limpar sessão e redirecionar para login
           // Mas não redirecionar se já estiver na rota de login (evita loop e recarregamento)

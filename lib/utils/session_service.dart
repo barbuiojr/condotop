@@ -41,7 +41,7 @@ class SessionService {
   String? getUserId() {
     return _userData?['id']?.toString() ?? _userData?['userId']?.toString();
   }
-  
+
   String? getUserTipo() {
     return _userData?['tipo']?.toString() ?? _userData?['tipo']?.toString();
   }
@@ -60,26 +60,27 @@ class SessionService {
       print('⚠️ SessionService: _userData é null');
       return null;
     }
-    
-    print('🔍 Buscando id_morador. Dados disponíveis: ${_userData!.keys.toList()}');
-    
+
+    print(
+        '🔍 Buscando id_morador. Dados disponíveis: ${_userData!.keys.toList()}');
+
     // Tentar várias variações de nomes de campo
-    final id = _userData?['id_morador'] ?? 
-               _userData?['idMorador'] ?? 
-               _userData?['morador_id'] ?? 
-               _userData?['moradorId'] ??
-               _userData?['id'] ??
-               _userData?['userId'];
-    
+    final id = _userData?['id_morador'] ??
+        _userData?['idMorador'] ??
+        _userData?['morador_id'] ??
+        _userData?['moradorId'] ??
+        _userData?['id'] ??
+        _userData?['userId'];
+
     print('🔍 Valor encontrado para id_morador: $id (tipo: ${id.runtimeType})');
-    
+
     if (id is int) return id;
     if (id is String) {
       final parsed = int.tryParse(id);
       print('🔍 String convertida para int: $parsed');
       return parsed;
     }
-    
+
     print('❌ Não foi possível obter id_morador');
     return null;
   }
@@ -90,38 +91,56 @@ class SessionService {
       print('⚠️ SessionService: _userData é null');
       return null;
     }
-    
-    print('🔍 Buscando id_condominio. Dados disponíveis: ${_userData!.keys.toList()}');
-    
+
+    print(
+        '🔍 Buscando id_condominio. Dados disponíveis: ${_userData!.keys.toList()}');
+
     // Tentar várias variações de nomes de campo
-    final id = _userData?['id_condominio'] ?? 
-               _userData?['idCondominio'] ?? 
-               _userData?['condominio_id'] ?? 
-               _userData?['condominioId'] ??
-               _userData?['condominio'] ??
-               _userData?['cond_id'];
-    
-    print('🔍 Valor encontrado para id_condominio: $id (tipo: ${id.runtimeType})');
-    
+    final id = _userData?['id_condominio'] ??
+        _userData?['idCondominio'] ??
+        _userData?['condominio_id'] ??
+        _userData?['condominioId'] ??
+        _userData?['condominio'] ??
+        _userData?['cond_id'];
+
+    print(
+        '🔍 Valor encontrado para id_condominio: $id (tipo: ${id.runtimeType})');
+
     if (id is int) return id;
     if (id is String) {
       final parsed = int.tryParse(id);
       print('🔍 String convertida para int: $parsed');
       return parsed;
     }
-    
+    if (id is Map) {
+      final condominioMap = Map<String, dynamic>.from(id);
+      final nestedId = condominioMap['id'] ??
+          condominioMap['id_condominio'] ??
+          condominioMap['condominio_id'] ??
+          condominioMap['condominioId'];
+
+      print('🔍 Valor encontrado em condomínio aninhado: $nestedId');
+
+      if (nestedId is int) {
+        return nestedId;
+      }
+      if (nestedId is String) {
+        return int.tryParse(nestedId);
+      }
+    }
+
     print('❌ Não foi possível obter id_condominio');
     return null;
   }
-  
+
   // Método de debug para ver todos os dados salvos
   void printDebugInfo() {
     print('=== DEBUG SESSION SERVICE ===');
-    print('Token: ${_token != null ? "***${_token!.substring(_token!.length - 4)}" : "null"}');
+    print(
+        'Token: ${_token != null ? "***${_token!.substring(_token!.length - 4)}" : "null"}');
     print('UserData: $_userData');
     print('ID Morador: ${getIdMorador()}');
     print('ID Condomínio: ${getIdCondominio()}');
     print('============================');
   }
 }
-

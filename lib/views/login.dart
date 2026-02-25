@@ -18,6 +18,7 @@ class _LoginState extends State<Login> {
   final _authService = AuthService();
   bool _isLoading = false;
   bool _rememberPassword = false;
+  bool _obscurePassword = true;
   String? _errorMessage;
 
   @override
@@ -218,8 +219,14 @@ class _LoginState extends State<Login> {
                             controller: _passwordController,
                             hint: "Senha",
                             icon: Icons.lock_outline_rounded,
-                            obscure: true,
+                            obscure: _obscurePassword,
                             color: blueColor,
+                            enableVisibilityToggle: true,
+                            onToggleVisibility: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Por favor, insira sua senha';
@@ -245,7 +252,7 @@ class _LoginState extends State<Login> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Lembrar senha',
+                                'Lembrar-me',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey.shade700,
@@ -355,6 +362,8 @@ class _LoginState extends State<Login> {
     required IconData icon,
     required bool obscure,
     required Color color,
+    bool enableVisibilityToggle = false,
+    VoidCallback? onToggleVisibility,
     String? Function(String?)? validator,
   }) {
     return Container(
@@ -412,6 +421,17 @@ class _LoginState extends State<Login> {
             color: color,
             size: 22,
           ),
+          suffixIcon: enableVisibilityToggle
+              ? IconButton(
+                  onPressed: onToggleVisibility,
+                  icon: Icon(
+                    obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: Colors.grey.shade500,
+                  ),
+                )
+              : null,
         ),
       ),
     );

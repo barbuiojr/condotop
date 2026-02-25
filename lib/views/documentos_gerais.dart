@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/views/editar_perfil.dart';
 import 'package:condotop/views/redefinir_senha.dart';
+import 'package:condotop/views/validar_morador.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -141,6 +142,11 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
     await _carregarFotoPerfil();
   }
 
+  bool _isSindico() {
+    final tipo = (_session.getUserTipo() ?? '').trim().toUpperCase();
+    return tipo == 'S' || tipo == 'SINDICO' || tipo == 'SÍNDICO';
+  }
+
   Widget _buildPrimaryButton({
     required String title,
     required IconData icon,
@@ -200,6 +206,7 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
   Widget build(BuildContext context) {
     const blueColor = Color.fromARGB(225, 0, 68, 170);
     const orangeColor = const Color.fromARGB(255, 255, 102, 1);
+    final isSindico = _isSindico();
 
     return Scaffold(
       appBar: AppBar(
@@ -313,6 +320,21 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
                       );
                     },
                   ),
+                  if (isSindico) ...[
+                    const SizedBox(height: 12),
+                    _buildPrimaryButton(
+                      title: 'Validar morador',
+                      icon: Icons.verified_user_outlined,
+                      color: blueColor,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ValidarMorador(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   _buildPrimaryButton(
                     title: 'Sair',

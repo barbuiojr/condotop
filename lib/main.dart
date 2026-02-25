@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        dialogTheme: const DialogThemeData(
+        dialogTheme: const DialogTheme(
           surfaceTintColor: Colors.transparent,
         ),
       ),

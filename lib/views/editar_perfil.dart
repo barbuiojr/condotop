@@ -1,4 +1,5 @@
 import 'package:condotop/utils/api.dart';
+import 'package:condotop/utils/app_snackbar.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -149,12 +150,7 @@ class _EditarPerfilState extends State<EditarPerfil> {
         _isSaving = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Perfil atualizado com sucesso!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackbar.showSuccess(context, 'Perfil atualizado com sucesso!');
     } catch (e) {
       if (!mounted) {
         return;

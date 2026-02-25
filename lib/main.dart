@@ -28,6 +28,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: ApiService.navigatorKey,
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 0, 68, 170),
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+        dialogTheme: const DialogThemeData(
+          surfaceTintColor: Colors.transparent,
+        ),
+      ),
       locale: const Locale('pt', 'BR'),
       supportedLocales: const [
         Locale('pt', 'BR'),

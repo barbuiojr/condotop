@@ -91,39 +91,6 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
       return;
     }
 
-    final shouldSave = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Pré-visualização'),
-          content: Center(
-            child: ClipOval(
-              child: Image.file(
-                File(picked.path),
-                width: 170,
-                height: 170,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Salvar foto'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (shouldSave != true) {
-      return;
-    }
-
     await _salvarFotoPerfil(File(picked.path));
   }
 
@@ -131,6 +98,12 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
     final idMorador = _session.getIdMorador();
     if (idMorador == null) {
       return;
+    }
+
+    // Limpar cache da imagem anterior
+    if (_fotoPerfil != null) {
+      imageCache.evict(FileImage(_fotoPerfil!));
+      imageCache.clear();
     }
 
     final appDir = await getApplicationDocumentsDirectory();
@@ -154,6 +127,18 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
     setState(() {
       _fotoPerfil = savedFile;
     });
+  }
+
+  Future<void> _onRefresh() async {
+    // Limpar cache da imagem anterior
+    if (_fotoPerfil != null) {
+      imageCache.evict(FileImage(_fotoPerfil!));
+      imageCache.clear();
+    }
+    setState(() {
+      _fotoPerfil = null;
+    });
+    await _carregarFotoPerfil();
   }
 
   Widget _buildPrimaryButton({
@@ -229,110 +214,119 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
         backgroundColor: Color.fromARGB(225, 0, 68, 170),
         centerTitle: true,
         title: Text(
-          "Documentos Gerais",
+          "Meu Perfil",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              children: [
-                const SizedBox(height: 8),
-                Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      width: 130,
-                      height: 130,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: blueColor, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: _fotoPerfil != null
-                            ? Image.file(
-                                _fotoPerfil!,
-                                fit: BoxFit.cover,
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.all(18),
-                                child: Image.asset(
-                                  'assets/logo/logo_condotop.png',
-                                  fit: BoxFit.contain,
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: blueColor,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 8),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: blueColor, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: _fotoPerfil != null
+                              ? Image.file(
+                                  _fotoPerfil!,
+                                  width: 130,
+                                  height: 130,
+                                  fit: BoxFit.cover,
+                                  filterQuality: FilterQuality.high,
+                                  gaplessPlayback: true,
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.all(18),
+                                  child: Image.asset(
+                                    'assets/logo/logo_condotop.png',
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
-                              ),
+                        ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: -4,
-                      right: 6,
-                      child: GestureDetector(
-                        onTap: _selecionarFoto,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: orangeColor,
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt_rounded,
-                            color: Colors.white,
-                            size: 17,
+                      Positioned(
+                        bottom: -4,
+                        right: 6,
+                        child: GestureDetector(
+                          onTap: _selecionarFoto,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: orangeColor,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt_rounded,
+                              color: Colors.white,
+                              size: 17,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 36),
-                _buildPrimaryButton(
-                  title: 'Editar perfil',
-                  icon: Icons.edit_rounded,
-                  color: blueColor,
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const EditarPerfil(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
-                _buildPrimaryButton(
-                  title: 'Redefinir senha',
-                  icon: Icons.lock_reset_rounded,
-                  color: blueColor,
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const RedefinirSenha(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
-                _buildPrimaryButton(
-                  title: 'Sair',
-                  icon: Icons.login_rounded,
-                  color: orangeColor,
-                  showLoader: true,
-                  onPressed: () {
-                    _session.clearSession();
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/login', (route) => false);
-                  },
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 36),
+                  _buildPrimaryButton(
+                    title: 'Editar perfil',
+                    icon: Icons.edit_rounded,
+                    color: blueColor,
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const EditarPerfil(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildPrimaryButton(
+                    title: 'Redefinir senha',
+                    icon: Icons.lock_reset_rounded,
+                    color: blueColor,
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const RedefinirSenha(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildPrimaryButton(
+                    title: 'Sair',
+                    icon: Icons.login_rounded,
+                    color: orangeColor,
+                    showLoader: true,
+                    onPressed: () {
+                      _session.clearSession();
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, '/login', (route) => false);
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

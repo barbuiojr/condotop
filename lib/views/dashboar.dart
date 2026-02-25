@@ -1,3 +1,4 @@
+import 'package:condotop/views/atas_docs.dart';
 import 'package:condotop/components/card_dashboard.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/views/autorizar_visitante.dart';
@@ -102,6 +103,11 @@ class _DashboardState extends State<Dashboard> {
                           const ValidarMorador(),
                         )
                       : Container(),
+                  CardDashboard(
+                    Icons.description_outlined,
+                    "Atas/Docs",
+                    const AtasDocs(),
+                  ),
                 ],
               ),
               // Row(

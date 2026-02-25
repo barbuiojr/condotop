@@ -84,8 +84,8 @@ class ApiService {
     return await dio.get(url, queryParameters: query);
   }
 
-  Future<Response> post(String url, dynamic data) async {
-    return await dio.post(url, data: data);
+  Future<Response> post(String url, dynamic data, {Options? options}) async {
+    return await dio.post(url, data: data, options: options);
   }
 
   Future<Response> put(String url, dynamic data) async {

@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:condotop/utils/api.dart';
 import 'package:condotop/utils/app_snackbar.dart';
 import 'package:condotop/utils/session_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class RegistrarReclamacao extends StatefulWidget {
   const RegistrarReclamacao({super.key});
@@ -17,10 +20,12 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
   final _descricaoController = TextEditingController();
   final _sessionService = SessionService();
   final _apiService = ApiService();
+  final _imagePicker = ImagePicker();
   String _urgencia = 'Média';
   bool _isLoading = false;
   String? _successMessage;
   String? _errorMessage;
+  File? _fotoReclamacao;
 
   @override
   void dispose() {
@@ -49,7 +54,6 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
           return;
         }
 
-        // Criar body para a API (sem data_entrada e hora_entrada, ou null)
         final body = {
           'id_condominio': idCondominio,
           'id_morador': idMorador,
@@ -58,11 +62,28 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
           'data_reclamacao': DateTime.now().toIso8601String(),
         };
 
+        dynamic payload = body;
+        Options? options;
+        if (_fotoReclamacao != null) {
+          final fileName = _fotoReclamacao!.path.split('/').last;
+          payload = FormData.fromMap({
+            ...body,
+            'foto': await MultipartFile.fromFile(
+              _fotoReclamacao!.path,
+              filename: fileName,
+            ),
+          });
+          options = Options(
+            contentType: 'multipart/form-data',
+          );
+        }
+
         // Debug: imprimir o body
         print('📤 Enviando para API: $body');
 
         // Enviar para a API
-        final response = await _apiService.post('/reclamacoes/', body);
+        final response =
+            await _apiService.post('/reclamacoes/', payload, options: options);
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           // Criar JSON para o QR code (mesmo formato)
@@ -71,6 +92,7 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
           setState(() {
             _isLoading = false;
             _descricaoController.clear();
+            _fotoReclamacao = null;
           });
 
           AppSnackbar.showSuccess(
@@ -108,6 +130,48 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
         print('❌ Erro ao gerar QR code: $e');
       }
     }
+  }
+
+  Future<void> _selecionarFoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Câmera'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Galeria'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (source == null) {
+      return;
+    }
+
+    final picked = await _imagePicker.pickImage(
+      source: source,
+      imageQuality: 85,
+    );
+
+    if (picked == null) {
+      return;
+    }
+
+    setState(() {
+      _fotoReclamacao = File(picked.path);
+    });
   }
 
   @override
@@ -241,6 +305,69 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 16),
+
+              Text(
+                "Foto (opcional)",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 45,
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _selecionarFoto,
+                  icon: const Icon(Icons.add_a_photo_outlined),
+                  label: Text(
+                    _fotoReclamacao == null ? 'Adicionar foto' : 'Alterar foto',
+                  ),
+                ),
+              ),
+              if (_fotoReclamacao != null) ...[
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    children: [
+                      Image.file(
+                        _fotoReclamacao!,
+                        width: double.infinity,
+                        height: 180,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: _isLoading
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _fotoReclamacao = null;
+                                  });
+                                },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 16),
 

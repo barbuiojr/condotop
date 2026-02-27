@@ -1,15 +1,15 @@
 import 'package:condotop/views/autorizacao_veiculo_form.dart';
 import 'package:flutter/material.dart';
 
-class SolicitacaoUber extends StatelessWidget {
-  const SolicitacaoUber({super.key});
+class SolicitacaoPrestador extends StatelessWidget {
+  const SolicitacaoPrestador({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const AutorizacaoVeiculoForm(
-      nomeServico: 'Uber',
-      tipoServico: 'Uber',
-      tituloTela: 'Solicitar Uber',
+      nomeServico: 'Prestador',
+      tipoServico: 'Prestador',
+      tituloTela: 'Solicitar Prestador',
     );
   }
 }

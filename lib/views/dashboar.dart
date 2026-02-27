@@ -5,7 +5,7 @@ import 'package:condotop/views/documentos_gerais.dart';
 import 'package:condotop/views/registrar_defeito.dart';
 import 'package:condotop/views/registrar_reclamacao.dart';
 import 'package:condotop/views/reserva_area_comum.dart';
-import 'package:condotop/views/solicitacao_prestador_fixo.dart';
+import 'package:condotop/views/solicitacao_prestador.dart';
 import 'package:condotop/views/solicitacao_uber.dart';
 import 'package:flutter/material.dart';
 
@@ -110,7 +110,7 @@ class _DashboardState extends State<Dashboard> {
                   CardDashboard(
                     Icons.handyman_outlined,
                     "Autorizar\nPrestador de Serviço",
-                    const SolicitacaoPrestadorFixo(),
+                    const SolicitacaoPrestador(),
                   ),
                 ],
               ),

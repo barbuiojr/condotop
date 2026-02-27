@@ -1,4 +1,4 @@
-import 'package:condotop/views/registrar_reclamacao.dart';
+import 'package:condotop/views/registro_ocorrencia_form.dart';
 import 'package:flutter/material.dart';
 
 class RegistrarDefeito extends StatelessWidget {
@@ -6,7 +6,7 @@ class RegistrarDefeito extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const RegistrarReclamacao(
+    return const RegistroOcorrenciaForm(
       endpoint: '/defeitos/',
       tituloTela: 'Registrar Defeito',
       dataField: 'data_defeito',

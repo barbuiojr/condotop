@@ -97,15 +97,18 @@ class _DashboardState extends State<Dashboard> {
                     "Registrar\nDefeito",
                     const RegistrarDefeito(),
                   ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
                   CardDashboard(
                     Icons.description_outlined,
                     "Atas/Docs",
                     const AtasDocs(),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.05,
                   ),
                   CardDashboard(
                     Icons.handyman_outlined,

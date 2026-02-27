@@ -19,6 +19,10 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
   static const int _minMinute = 7 * 60; // 07:00
   static const int _maxMinute = 22 * 60; // 22:00
   List<DateTime> datasBloqueadas = [];
+  List<Map<String, dynamic>> _reservasCondominio = [];
+  List<Map<String, dynamic>> _areasComuns = [];
+  int? _idAreaComumSelecionada;
+  bool _isLoadingAreasComuns = true;
 
   static DateTime _stripTime(DateTime date) {
     return DateTime(date.year, date.month, date.day);
@@ -66,6 +70,144 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
     return null;
   }
 
+  int? _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  List<Map<String, dynamic>> _extrairLista(dynamic data) {
+    if (data is List) {
+      return data
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+    }
+
+    if (data is Map) {
+      final map = Map<String, dynamic>.from(data);
+      for (final key in [
+        'data',
+        'items',
+        'result',
+        'reservas',
+        'areas_comuns',
+        'areas'
+      ]) {
+        final value = map[key];
+        if (value is List) {
+          return value
+              .whereType<Map>()
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList();
+        }
+      }
+    }
+
+    return [];
+  }
+
+  void _atualizarDatasBloqueadas({bool ajustarDataSelecionada = true}) {
+    final bloqueadas = _reservasCondominio
+        .where((reserva) {
+          if (_idAreaComumSelecionada == null) {
+            return false;
+          }
+
+          final idArea = _toInt(
+            reserva['id_area_comum'] ??
+                reserva['idAreaComum'] ??
+                reserva['area_comum_id'] ??
+                reserva['areaComumId'],
+          );
+          return idArea == _idAreaComumSelecionada;
+        })
+        .map((reserva) {
+          final dataTexto = (reserva['data_reserva'] ?? '').toString();
+          final parteData = dataTexto.split('T').first;
+          return DateTime.parse(parteData);
+        })
+        .map(_stripTime)
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.compareTo(b));
+
+    final hoje = _stripTime(DateTime.now());
+    final ultimoDia = hoje.add(const Duration(days: 365));
+    final proximaDisponivel =
+        _proximaDataDisponivelComLista(hoje, ultimoDia, bloqueadas);
+
+    setState(() {
+      datasBloqueadas = bloqueadas;
+      if (ajustarDataSelecionada) {
+        _selectedDate = proximaDisponivel ?? hoje;
+      }
+    });
+  }
+
+  Future<void> _carregarAreasComuns() async {
+    final idCondominio = _sessionService.getIdCondominio();
+    if (idCondominio == null) {
+      setState(() {
+        _isLoadingAreasComuns = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoadingAreasComuns = true;
+    });
+
+    try {
+      dynamic data;
+
+      try {
+        final response = await _apiService.get(
+          '/areas-comuns/',
+          query: {'id_condominio': idCondominio},
+        );
+        data = response.data;
+      } catch (_) {
+        final response =
+            await _apiService.get('/areas-comuns/condominio/$idCondominio');
+        data = response.data;
+      }
+
+      final areas = _extrairLista(data).where((item) {
+        final condominioItem = _toInt(
+          item['id_condominio'] ??
+              item['idCondominio'] ??
+              item['condominio_id'] ??
+              item['condominioId'],
+        );
+        return condominioItem == null || condominioItem == idCondominio;
+      }).toList();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _areasComuns = areas;
+        _idAreaComumSelecionada =
+            _toInt(areas.isNotEmpty ? areas.first['id'] : null);
+        _isLoadingAreasComuns = false;
+      });
+
+      _atualizarDatasBloqueadas();
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isLoadingAreasComuns = false;
+        _areasComuns = [];
+        _idAreaComumSelecionada = null;
+      });
+    }
+  }
+
   Future<void> buscaReservas({bool ajustarDataSelecionada = true}) async {
     final idCondominio = _sessionService.getIdCondominio();
     if (idCondominio == null) {
@@ -76,32 +218,17 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
       final response = await _apiService
           .get('/reservas-area-comum/condominio/$idCondominio');
       print("Reservas: ${response.data}");
-      final reservas = (response.data as List)
-          .map((reserva) {
-            final dataTexto = (reserva['data_reserva'] ?? '').toString();
-            final parteData = dataTexto.split('T').first;
-            return DateTime.parse(parteData);
-          })
-          .map(_stripTime)
-          .toSet()
-          .toList()
-        ..sort((a, b) => a.compareTo(b));
+      final reservas = _extrairLista(response.data);
 
       if (!mounted) {
         return;
       }
 
-      final hoje = _stripTime(DateTime.now());
-      final ultimoDia = hoje.add(const Duration(days: 365));
-      final proximaDisponivel =
-          _proximaDataDisponivelComLista(hoje, ultimoDia, reservas);
-
       setState(() {
-        datasBloqueadas = reservas;
-        if (ajustarDataSelecionada) {
-          _selectedDate = proximaDisponivel ?? hoje;
-        }
+        _reservasCondominio = reservas;
       });
+
+      _atualizarDatasBloqueadas(ajustarDataSelecionada: ajustarDataSelecionada);
 
       // Processar reservas conforme necessário
     } catch (e) {
@@ -111,6 +238,7 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
 
   initState() {
     super.initState();
+    _carregarAreasComuns();
     buscaReservas();
   }
 
@@ -118,8 +246,9 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
   Widget build(BuildContext context) {
     final firstDate = _stripTime(DateTime.now());
     final lastDate = _stripTime(DateTime.now().add(const Duration(days: 365)));
+    final hasSelectedArea = _idAreaComumSelecionada != null;
     final hasAvailableDate =
-        _proximaDataDisponivel(firstDate, lastDate) != null;
+        hasSelectedArea && _proximaDataDisponivel(firstDate, lastDate) != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -140,6 +269,58 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 8),
+            Text(
+              'Área comum',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (_isLoadingAreasComuns)
+              const Center(child: CircularProgressIndicator())
+            else if (_areasComuns.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: const Text(
+                  'Nenhuma área comum cadastrada para este condomínio.',
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else
+              DropdownButtonFormField<int>(
+                value: _idAreaComumSelecionada,
+                decoration: InputDecoration(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                items: _areasComuns.map((area) {
+                  final id = _toInt(area['id']) ??
+                      _toInt(area['id_area_comum']) ??
+                      _toInt(area['area_comum_id']);
+                  final nome = (area['nome'] ?? 'Área comum').toString();
+                  return DropdownMenuItem<int>(
+                    value: id,
+                    child: Text(nome),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _idAreaComumSelecionada = value;
+                  });
+                  _atualizarDatasBloqueadas();
+                },
+              ),
+            const SizedBox(height: 16),
             Text(
               "Selecione uma data para reservar",
               style: TextStyle(
@@ -187,8 +368,10 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: const Text(
-                  'Não há datas disponíveis para reserva no período.',
+                child: Text(
+                  hasSelectedArea
+                      ? 'Não há datas disponíveis para reserva no período.'
+                      : 'Selecione uma área comum para visualizar o calendário.',
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -515,10 +698,19 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
     try {
       final idMorador = _sessionService.getIdMorador();
       final idCondominio = _sessionService.getIdCondominio();
+      final idAreaComum = _idAreaComumSelecionada;
 
       if (idMorador == null || idCondominio == null) {
         _showMessage(
           'Erro: Dados do usuário não encontrados. Faça login novamente.',
+          isError: true,
+        );
+        return;
+      }
+
+      if (idAreaComum == null) {
+        _showMessage(
+          'Selecione uma área comum antes de registrar a reserva.',
           isError: true,
         );
         return;
@@ -537,6 +729,7 @@ class _ReservaAreaComumState extends State<ReservaAreaComum> {
       final body = {
         "id_morador": idMorador,
         "id_condominio": idCondominio,
+        "id_area_comum": idAreaComum,
         "hora_inicio": horaInicio.toString(),
         "hora_fim": horaFim.toString(),
         "data_reserva": dataEscolhida.toIso8601String(),

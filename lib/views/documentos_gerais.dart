@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:condotop/utils/session_service.dart';
+import 'package:condotop/views/cadastro_areas_comuns.dart';
 import 'package:condotop/views/editar_perfil.dart';
 import 'package:condotop/views/lista_ocorrencias_sindico.dart';
 import 'package:condotop/views/redefinir_senha.dart';
@@ -369,6 +370,19 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
                               mensagemVazia:
                                   'Nenhuma reclamação encontrada no momento.',
                             ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPrimaryButton(
+                      title: 'Cadastrar áreas comuns',
+                      icon: Icons.add_business_outlined,
+                      color: blueColor,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const CadastroAreasComuns(),
                           ),
                         );
                       },

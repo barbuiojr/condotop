@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "864761509293",
+    "project_id": "app-condotop-teste",
+    "storage_bucket": "app-condotop-teste.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:864761509293:android:abd8a23c7d65ed0bbe9d24",
+        "android_client_info": {
+          "package_name": "com.condotop.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu8iNWQxeDULw7gH61eXehtuG98hB1FwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

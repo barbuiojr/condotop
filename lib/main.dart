@@ -1,16 +1,43 @@
 // import 'package:device_preview/device_preview.dart';
+import 'package:condotop/firebase_options.dart';
 import 'package:condotop/utils/api.dart';
+import 'package:condotop/utils/fcm_token_service.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/views/dashboar.dart';
 import 'package:condotop/views/editar_perfil.dart';
 import 'package:condotop/views/login.dart';
 import 'package:condotop/views/redefinir_senha.dart';
 import 'package:condotop/views/splash_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  debugPrint('FCM background message: ${message.messageId}');
+}
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await FcmTokenService.initialize();
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    debugPrint('FCM foreground message: ${message.messageId}');
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    debugPrint('FCM opened app: ${message.messageId}');
+  });
+
   // Configurar navigator key global para o interceptor
   ApiService.navigatorKey = GlobalKey<NavigatorState>();
   runApp(const MyApp());

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:condotop/utils/api.dart';
+import 'package:condotop/utils/fcm_token_service.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,13 +12,90 @@ class AuthService {
   static const String _rememberedUsernameKey = 'remembered_username';
   static const String _rememberedPasswordKey = 'remembered_password';
 
+  Future<String> _resolveFcmTokenForSync() async {
+    for (var attempt = 0; attempt < 5; attempt++) {
+      final token = await FcmTokenService.fetchAndCacheToken(
+        debugSource: 'sync-${attempt + 1}',
+      );
+      if (token.isNotEmpty) {
+        return token;
+      }
+      await Future.delayed(Duration(seconds: attempt + 1));
+    }
+
+    return '';
+  }
+
+  int? _extractMoradorIdFromResponse(Map<String, dynamic> data) {
+    final directId = data['id_morador'] ?? data['idMorador'] ?? data['id'];
+    if (directId is int) {
+      return directId;
+    }
+    if (directId is String) {
+      return int.tryParse(directId);
+    }
+
+    final user = data['user'] ?? data['usuario'];
+    if (user is Map) {
+      final userMap = Map<String, dynamic>.from(user);
+      final nestedId =
+          userMap['id_morador'] ?? userMap['idMorador'] ?? userMap['id'];
+      if (nestedId is int) {
+        return nestedId;
+      }
+      if (nestedId is String) {
+        return int.tryParse(nestedId);
+      }
+    }
+
+    return null;
+  }
+
+  void _syncFcmTokenInBackground({
+    required Map<String, dynamic> loginData,
+    String initialToken = '',
+  }) {
+    unawaited(() async {
+      try {
+        var token = initialToken;
+        if (token.isEmpty) {
+          token = await _resolveFcmTokenForSync();
+        }
+
+        if (token.isEmpty) {
+          print('⚠️ fcm_token indisponível para sincronizar após login.');
+          return;
+        }
+
+        final moradorId = _sessionService.getIdMorador() ??
+            _extractMoradorIdFromResponse(loginData);
+
+        if (moradorId == null) {
+          print(
+              '⚠️ Não foi possível identificar id_morador para salvar fcm_token.');
+          return;
+        }
+
+        await _apiService.put('/moradores/$moradorId', {'fcm_token': token});
+        print('✅ fcm_token sincronizado no morador $moradorId.');
+      } catch (e) {
+        print('❌ Falha ao sincronizar fcm_token após login: $e');
+      }
+    }());
+  }
+
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
+      final fcmToken = await FcmTokenService.getTokenForLogin();
+      print('🔔 Login com fcm_token preenchido: ${fcmToken.isNotEmpty}');
+      print('🔔 fcm_token no login: $fcmToken');
+
       final response = await _apiService.post(
         '/auth/login',
         {
           'usuario': username,
           'senha': password,
+          'fcm_token': fcmToken,
         },
       );
 
@@ -68,6 +148,7 @@ class AuthService {
         print('💾 Dados a serem salvos na sessão: $userDataToSave');
 
         _sessionService.saveUserData(userDataToSave);
+        _syncFcmTokenInBackground(loginData: data, initialToken: fcmToken);
 
         return {
           'success': true,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:condotop/utils/api.dart';
 import 'package:condotop/views/login.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class Cadastro extends StatefulWidget {
   const Cadastro({super.key});
@@ -110,6 +111,11 @@ class _CadastroState extends State<Cadastro> {
             _condominioSelecionado['id_condominio'] ??
             0;
 
+        String fcmToken = '';
+        try {
+          fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+        } catch (_) {}
+
         final body = {
           'nome': _nomeController.text.trim(),
           'email': _emailController.text.trim(),
@@ -120,6 +126,7 @@ class _CadastroState extends State<Cadastro> {
           'uh': _uhController.text.trim(), // UH deve ser string, não número
           'id_condominio': idCondominio,
           'senha': _senhaController.text,
+          'fcm_token': fcmToken,
         };
 
         // Debug: imprimir o corpo da requisição

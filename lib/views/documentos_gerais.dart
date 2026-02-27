@@ -309,19 +309,6 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
                       );
                     },
                   ),
-                  const SizedBox(height: 12),
-                  _buildPrimaryButton(
-                    title: 'Redefinir senha',
-                    icon: Icons.lock_reset_rounded,
-                    color: blueColor,
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const RedefinirSenha(),
-                        ),
-                      );
-                    },
-                  ),
                   if (isSindico) ...[
                     const SizedBox(height: 12),
                     _buildPrimaryButton(
@@ -332,6 +319,19 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => const ValidarMorador(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPrimaryButton(
+                      title: 'Cadastrar áreas comuns',
+                      icon: Icons.add_business_outlined,
+                      color: blueColor,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const CadastroAreasComuns(),
                           ),
                         );
                       },
@@ -374,20 +374,20 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
                         );
                       },
                     ),
-                    const SizedBox(height: 12),
-                    _buildPrimaryButton(
-                      title: 'Cadastrar áreas comuns',
-                      icon: Icons.add_business_outlined,
-                      color: blueColor,
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const CadastroAreasComuns(),
-                          ),
-                        );
-                      },
-                    ),
                   ],
+                  const SizedBox(height: 12),
+                  _buildPrimaryButton(
+                    title: 'Redefinir senha',
+                    icon: Icons.lock_reset_rounded,
+                    color: blueColor,
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const RedefinirSenha(),
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 12),
                   _buildPrimaryButton(
                     title: 'Sair',

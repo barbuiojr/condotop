@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:condotop/utils/auth_service.dart';
 import 'package:condotop/views/dashboar.dart';
 import 'package:condotop/views/cadastro.dart';
+import 'package:condotop/views/recuperar_senha.dart';
 import 'package:condotop/utils/uber_notifier.dart';
 
 class Login extends StatefulWidget {
@@ -257,6 +258,29 @@ class _LoginState extends State<Login> {
                                   fontSize: 14,
                                   color: Colors.grey.shade700,
                                   fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: _isLoading
+                                    ? null
+                                    : () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const RecuperarSenhaEmail(),
+                                          ),
+                                        );
+                                      },
+                                child: Text(
+                                  'Esqueci minha senha',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: blueColor,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: blueColor,
+                                  ),
                                 ),
                               ),
                             ],

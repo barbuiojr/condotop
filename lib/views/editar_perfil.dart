@@ -302,6 +302,7 @@ class _EditarPerfilState extends State<EditarPerfil> {
                       hint: 'Bloco',
                       icon: Icons.apartment_outlined,
                       color: blueColor,
+                      readOnly: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Informe seu bloco';
@@ -315,6 +316,7 @@ class _EditarPerfilState extends State<EditarPerfil> {
                       hint: 'UH',
                       icon: Icons.home_outlined,
                       color: blueColor,
+                      readOnly: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Informe sua UH';
@@ -513,7 +515,7 @@ class _EditarPerfilState extends State<EditarPerfil> {
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide(
-              color: Colors.grey.shade200,
+              color: readOnly ? Colors.grey.shade300 : Colors.grey.shade200,
               width: 1.5,
             ),
           ),
@@ -525,7 +527,7 @@ class _EditarPerfilState extends State<EditarPerfil> {
             ),
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: readOnly ? Colors.grey.shade100 : Colors.white,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 14,

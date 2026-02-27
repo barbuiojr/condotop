@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/views/editar_perfil.dart';
+import 'package:condotop/views/lista_ocorrencias_sindico.dart';
 import 'package:condotop/views/redefinir_senha.dart';
 import 'package:condotop/views/validar_morador.dart';
 import 'package:image_picker/image_picker.dart';
@@ -330,6 +331,44 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => const ValidarMorador(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPrimaryButton(
+                      title: 'Lista de defeitos',
+                      icon: Icons.build_circle_outlined,
+                      color: blueColor,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ListaOcorrenciasSindico(
+                              tituloTela: 'Defeitos',
+                              endpoint: '/defeitos/',
+                              tituloItem: 'Defeito',
+                              mensagemVazia:
+                                  'Nenhum defeito encontrado no momento.',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPrimaryButton(
+                      title: 'Lista de reclamações',
+                      icon: Icons.comment_bank_outlined,
+                      color: blueColor,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ListaOcorrenciasSindico(
+                              tituloTela: 'Reclamações',
+                              endpoint: '/reclamacoes/',
+                              tituloItem: 'Reclamação',
+                              mensagemVazia:
+                                  'Nenhuma reclamação encontrada no momento.',
+                            ),
                           ),
                         );
                       },

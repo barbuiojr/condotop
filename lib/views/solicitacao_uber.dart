@@ -5,7 +5,16 @@ import 'package:condotop/utils/session_service.dart';
 import 'package:dio/dio.dart';
 
 class SolicitacaoUber extends StatefulWidget {
-  const SolicitacaoUber({super.key});
+  const SolicitacaoUber({
+    super.key,
+    this.nomeServico = 'Uber',
+    this.tipoServico = 'uber',
+    this.tituloTela = 'Solicitar Uber',
+  });
+
+  final String nomeServico;
+  final String tipoServico;
+  final String tituloTela;
 
   @override
   State<SolicitacaoUber> createState() => _SolicitacaoUberState();
@@ -24,6 +33,10 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
   String? _successMessage;
   Map<String, dynamic>? _solicitacaoExistente;
   Timer? _pollingTimer;
+
+  String get _nomeServico => widget.nomeServico;
+  String get _tipoServico => widget.tipoServico.toLowerCase();
+  String get _tituloTela => widget.tituloTela;
 
   @override
   void initState() {
@@ -126,7 +139,7 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
           }
         }
 
-        // Filtrar solicitações de Uber ativas do morador (não canceladas)
+        // Filtrar solicitações ativas do serviço selecionado (não canceladas)
         Map<String, dynamic>? solicitacaoUber;
 
         for (var solicitacao in solicitacoes) {
@@ -140,11 +153,11 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
             print(
                 '🔍 Verificando solicitação: tipo=$tipoServico, idMorador=$solIdMorador, cancelado=$cancelado');
 
-            // Verificar se é Uber, do morador correto e não está cancelado
-            if (tipoServico == 'uber' &&
+            // Verificar se é do serviço correto, do morador correto e não está cancelado
+            if (tipoServico == _tipoServico &&
                 solIdMorador == idMorador &&
                 (cancelado == null || cancelado == false || cancelado == 0)) {
-              print('✅ Solicitação de Uber ativa encontrada!');
+              print('✅ Solicitação de $_nomeServico ativa encontrada!');
               solicitacaoUber = sol;
               break;
             }
@@ -192,7 +205,7 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
 
           return;
         } else {
-          print('ℹ️ Nenhuma solicitação de Uber ativa encontrada');
+          print('ℹ️ Nenhuma solicitação de $_nomeServico ativa encontrada');
           _pollingTimer?.cancel();
         }
       }
@@ -225,8 +238,8 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Cancelar Solicitação'),
-        content: const Text(
-            'Tem certeza que deseja cancelar esta solicitação de Uber?'),
+        content: Text(
+            'Tem certeza que deseja cancelar esta solicitação de $_nomeServico?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -351,7 +364,7 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
         final body = {
           "placa": _placaController.text.trim().toUpperCase(),
           "veiculo": _veiculoController.text.trim(),
-          "tipo_servico": "Uber",
+          "tipo_servico": widget.tipoServico,
           "id_morador": idMorador,
           "id_condominio": idCondominio,
         };
@@ -372,7 +385,7 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
             Navigator.of(context).pop();
           }
         } else {
-          String errorMsg = 'Erro ao autorizar Uber. Tente novamente.';
+          String errorMsg = 'Erro ao autorizar $_nomeServico. Tente novamente.';
           if (response.data != null && response.data is Map) {
             final errorData = response.data as Map;
             if (errorData.containsKey('message')) {
@@ -387,7 +400,7 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
           });
         }
       } catch (e) {
-        String errorMessage = 'Erro ao autorizar Uber';
+        String errorMessage = 'Erro ao autorizar $_nomeServico';
 
         // Tratar erros do Dio
         if (e is DioException) {
@@ -453,8 +466,8 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          "Solicitar Uber",
+        title: Text(
+          _tituloTela,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -513,7 +526,7 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
 
             const SizedBox(height: 8),
             Text(
-              "Você já possui uma solicitação de Uber ativa",
+              "Você já possui uma solicitação de $_nomeServico ativa",
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -868,8 +881,8 @@ class _SolicitacaoUberState extends State<SolicitacaoUber> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
-                    "Solicitar Uber",
+                  Text(
+                    _tituloTela,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,

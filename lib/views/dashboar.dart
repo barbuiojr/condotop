@@ -2,8 +2,10 @@ import 'package:condotop/views/atas_docs.dart';
 import 'package:condotop/components/card_dashboard.dart';
 import 'package:condotop/views/autorizar_visitante.dart';
 import 'package:condotop/views/documentos_gerais.dart';
+import 'package:condotop/views/registrar_defeito.dart';
 import 'package:condotop/views/registrar_reclamacao.dart';
 import 'package:condotop/views/reserva_area_comum.dart';
+import 'package:condotop/views/solicitacao_prestador_fixo.dart';
 import 'package:condotop/views/solicitacao_uber.dart';
 import 'package:flutter/material.dart';
 
@@ -91,9 +93,24 @@ class _DashboardState extends State<Dashboard> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   CardDashboard(
+                    Icons.handyman_outlined,
+                    "Registrar\nDefeito",
+                    const RegistrarDefeito(),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  CardDashboard(
                     Icons.description_outlined,
                     "Atas/Docs",
                     const AtasDocs(),
+                  ),
+                  CardDashboard(
+                    Icons.handyman_outlined,
+                    "Autorizar\nPrestador de Serviço",
+                    const SolicitacaoPrestadorFixo(),
                   ),
                 ],
               ),

@@ -9,7 +9,26 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class RegistrarReclamacao extends StatefulWidget {
-  const RegistrarReclamacao({super.key});
+  const RegistrarReclamacao({
+    super.key,
+    this.endpoint = '/reclamacoes/',
+    this.tituloTela = 'Registrar Reclamação',
+    this.dataField = 'data_reclamacao',
+    this.successMessage = 'Reclamação cadastrada com sucesso!',
+    this.descricaoValidatorMessage =
+        'Por favor, descreva o motivo da reclamação',
+    this.descricaoHint = 'Descreva o que aconteceu...',
+    this.errorFallbackMessage =
+        'Erro ao registrar reclamação. Tente novamente.',
+  });
+
+  final String endpoint;
+  final String tituloTela;
+  final String dataField;
+  final String successMessage;
+  final String descricaoValidatorMessage;
+  final String descricaoHint;
+  final String errorFallbackMessage;
 
   @override
   State<RegistrarReclamacao> createState() => _RegistrarReclamacaoState();
@@ -59,7 +78,7 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
           'id_morador': idMorador,
           'urgencia': _urgencia,
           'descricao': descricao,
-          'data_reclamacao': DateTime.now().toIso8601String(),
+          widget.dataField: DateTime.now().toIso8601String(),
         };
 
         dynamic payload = body;
@@ -83,7 +102,7 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
 
         // Enviar para a API
         final response =
-            await _apiService.post('/reclamacoes/', payload, options: options);
+            await _apiService.post(widget.endpoint, payload, options: options);
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           // Criar JSON para o QR code (mesmo formato)
@@ -95,8 +114,7 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
             _fotoReclamacao = null;
           });
 
-          AppSnackbar.showSuccess(
-              context, 'Reclamação cadastrada com sucesso!');
+          AppSnackbar.showSuccess(context, widget.successMessage);
 
           // Debug: imprimir o JSON gerado
           print('✅ Reclamação cadastrada com sucesso: $jsonString');
@@ -105,11 +123,11 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
             _isLoading = false;
             _errorMessage = response.data['message'] ??
                 response.data['error'] ??
-                'Erro ao criar autorização de visitante';
+                widget.errorFallbackMessage;
           });
         }
       } catch (e) {
-        String errorMsg = 'Erro ao gerar QR code';
+        String errorMsg = widget.errorFallbackMessage;
         if (e.toString().contains('DioException')) {
           try {
             final errorData = (e as dynamic).response?.data;
@@ -181,8 +199,8 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
       appBar: AppBar(
         backgroundColor: Color.fromARGB(225, 0, 68, 170),
         centerTitle: true,
-        title: const Text(
-          "Registrar Reclamação",
+        title: Text(
+          widget.tituloTela,
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -268,7 +286,7 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
                   minLines: 3,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Por favor, descreva o motivo da reclamação';
+                      return widget.descricaoValidatorMessage;
                     }
                     return null;
                   },
@@ -297,7 +315,7 @@ class _RegistrarReclamacaoState extends State<RegistrarReclamacao> {
                       horizontal: 16,
                       vertical: 14,
                     ),
-                    hintText: "Descreva o que aconteceu...",
+                    hintText: widget.descricaoHint,
                     hintStyle: TextStyle(
                       color: Colors.grey.shade400,
                       fontSize: 15,

@@ -5,12 +5,49 @@ allprojects {
     }
 }
 
+ext {
+    fallbackCompileSdk = 35
+}
+
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 subprojects {
     project.evaluationDependsOn(":app")
+}
+
+subprojects { subproject ->
+    if (!subproject.ext.has("flutter")) {
+        subproject.ext.flutter = [
+            compileSdkVersion: rootProject.ext.fallbackCompileSdk
+        ]
+    }
+}
+
+subprojects { subproject ->
+    def configureAndroidModule = {
+        def androidExtension = subproject.extensions.findByName("android")
+        if (androidExtension == null) {
+            return
+        }
+
+        if (androidExtension.hasProperty("compileSdk") && androidExtension.compileSdk == null) {
+            androidExtension.compileSdk = rootProject.ext.fallbackCompileSdk
+        }
+
+        if (androidExtension.hasProperty("namespace") && androidExtension.namespace == null) {
+            androidExtension.namespace = "com.condotop.${subproject.name.replace('-', '_')}"
+        }
+    }
+
+    subproject.plugins.withId("com.android.application") {
+        configureAndroidModule()
+    }
+
+    subproject.plugins.withId("com.android.library") {
+        configureAndroidModule()
+    }
 }
 
 tasks.register("clean", Delete) {

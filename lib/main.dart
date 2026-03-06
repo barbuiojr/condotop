@@ -5,6 +5,7 @@ import 'package:condotop/utils/fcm_token_service.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:condotop/views/dashboar.dart';
 import 'package:condotop/views/editar_perfil.dart';
+import 'package:condotop/views/configurar_placa.dart';
 import 'package:condotop/views/login.dart';
 import 'package:condotop/views/redefinir_senha.dart';
 import 'package:condotop/views/splash_screen.dart';
@@ -82,6 +83,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const Login(),
         '/dashboard': (context) => const Dashboard(),
         '/editar-perfil': (context) => const EditarPerfil(),
+        '/configurar-placa': (context) => const ConfigurarPlaca(),
         '/redefinir-senha': (context) => const RedefinirSenha(),
       },
     );

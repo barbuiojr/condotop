@@ -51,6 +51,10 @@
 	<string>Permitir acesso à galeria para selecionar uma foto de perfil.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Permitir salvar a foto de perfil ajustada.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Permitir conexão Bluetooth com a placa para configurar o Wi‑Fi.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Permitir conexão Bluetooth com a placa para configurar o Wi‑Fi.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

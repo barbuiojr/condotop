@@ -68,39 +68,39 @@ class _DashboardState extends State<Dashboard> {
                     AutorizarVisitante(),
                   ),
                   CardDashboard(
-                    Icons.emoji_transportation_outlined,
-                    "Autorizar\nUber",
-                    SolicitacaoUber(),
+                    Icons.deck_outlined,
+                    "Reserva de\nÁrea comum",
+                    const ReservaAreaComum(),
                   ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  CardDashboard(
-                    Icons.deck_outlined,
-                    "Reserva de\nÁrea comum",
-                    const ReservaAreaComum(),
-                  ),
                   CardDashboard(
                     Icons.comment_sharp,
                     "Registrar\nReclamação",
                     RegistrarReclamacao(),
                   ),
+                  CardDashboard(
+                    Icons.handyman_outlined,
+                    "Registrar\nDefeito",
+                    const RegistrarDefeito(),
+                  ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   CardDashboard(
-                    Icons.handyman_outlined,
-                    "Registrar\nDefeito",
-                    const RegistrarDefeito(),
+                    Icons.emoji_transportation_outlined,
+                    "Autorizar\nUber",
+                    SolicitacaoUber(),
                   ),
                   CardDashboard(
-                    Icons.description_outlined,
-                    "Atas/Docs",
-                    const AtasDocs(),
+                    Icons.handyman_outlined,
+                    "Autorizar\nPrestador de Serviço",
+                    const SolicitacaoPrestador(),
                   ),
                 ],
               ),
@@ -111,9 +111,9 @@ class _DashboardState extends State<Dashboard> {
                     width: MediaQuery.of(context).size.width * 0.05,
                   ),
                   CardDashboard(
-                    Icons.handyman_outlined,
-                    "Autorizar\nPrestador de Serviço",
-                    const SolicitacaoPrestador(),
+                    Icons.description_outlined,
+                    "Atas/Docs",
+                    const AtasDocs(),
                   ),
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:condotop/utils/api.dart';
+import 'package:condotop/utils/device_login_info.dart';
 import 'package:condotop/utils/fcm_token_service.dart';
 import 'package:condotop/utils/session_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -86,6 +87,9 @@ class AuthService {
 
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
+      final deviceLoginInfo = await getDeviceLoginInfo();
+      print('📱 Informacoes do dispositivo no login: $deviceLoginInfo');
+
       final fcmToken = await FcmTokenService.getTokenForLogin();
       print('🔔 Login com fcm_token preenchido: ${fcmToken.isNotEmpty}');
       print('🔔 fcm_token no login: $fcmToken');

@@ -125,8 +125,8 @@ class _LoginState extends State<Login> {
                     bottom: constraints.maxHeight * 0.03,
                   ),
                   child: Image.asset(
-                    "assets/logo/logo_condotop.png",
-                    height: constraints.maxHeight * 0.18,
+                    "assets/logo/logo_condotop_without_bckground.png",
+                    height: constraints.maxHeight * 0.22,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -167,7 +167,6 @@ class _LoginState extends State<Login> {
                           if (_errorMessage != null)
                             Container(
                               margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: Colors.red.shade50,
                                 borderRadius: BorderRadius.circular(12),

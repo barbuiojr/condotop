@@ -268,9 +268,9 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
                                   gaplessPlayback: true,
                                 )
                               : Padding(
-                                  padding: const EdgeInsets.all(18),
+                                  padding: const EdgeInsets.all(12),
                                   child: Image.asset(
-                                    'assets/logo/logo_condotop.png',
+                                    'assets/logo/logo_condotop_without_bckground.png',
                                     fit: BoxFit.contain,
                                   ),
                                 ),

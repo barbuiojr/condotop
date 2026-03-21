@@ -19,10 +19,6 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
-    // Exemplo: Obter informações da sessão
-    // final userName = _session.getUserName() ?? 'Usuário';
-    // final userEmail = _session.getUserEmail();
-    // final userId = _session.getUserId();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 255, 102, 1),

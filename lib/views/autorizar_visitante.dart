@@ -3,8 +3,10 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:math';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -23,18 +25,150 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
   final GlobalKey _qrKey = GlobalKey();
   final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
+  final _cpfController = TextEditingController();
   final _sessionService = SessionService();
   final _apiService = ApiService();
 
   String? _qrCodeData;
   String? _qrCodeString;
   bool _isLoading = false;
+  bool _isConsultingCpf = false;
   String? _errorMessage;
+  String? _ultimoCpfConsultado;
+
+  static const String _cpfApiKey =
+      'f6b935357bbfe79e6507d0a609d174dd6818daeac16df8e50a28d2937beca524';
+  final Dio _cpfDio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+    ),
+  );
 
   @override
   void dispose() {
     _nomeController.dispose();
+    _cpfController.dispose();
     super.dispose();
+  }
+
+  String _apenasDigitos(String value) {
+    return value.replaceAll(RegExp(r'\D'), '');
+  }
+
+  void _onCpfChanged(String value) {
+    final cpf = _apenasDigitos(value);
+
+    if (cpf.length < 11) {
+      setState(() {
+        _nomeController.clear();
+        _ultimoCpfConsultado = null;
+        _errorMessage = null;
+      });
+      return;
+    }
+
+    if (cpf == _ultimoCpfConsultado || _isConsultingCpf) {
+      return;
+    }
+
+    _consultarCpf(cpf);
+  }
+
+  String? _extrairNome(dynamic data) {
+    if (data is Map) {
+      const possibleKeys = ['nome', 'Nome', 'NOME', 'name'];
+      for (final key in possibleKeys) {
+        final value = data[key];
+        if (value is String && value.trim().isNotEmpty) {
+          return value.trim();
+        }
+      }
+
+      for (final value in data.values) {
+        final nestedName = _extrairNome(value);
+        if (nestedName != null && nestedName.isNotEmpty) {
+          return nestedName;
+        }
+      }
+    }
+
+    if (data is List) {
+      for (final item in data) {
+        final nestedName = _extrairNome(item);
+        if (nestedName != null && nestedName.isNotEmpty) {
+          return nestedName;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  Future<void> _consultarCpf(String cpf) async {
+    if (!mounted) return;
+
+    setState(() {
+      _isConsultingCpf = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await _cpfDio.get(
+        'https://apicpf.com/api/consulta',
+        queryParameters: {'cpf': cpf},
+        options: Options(
+          headers: {
+            'X-API-KEY': _cpfApiKey,
+            'Accept': 'application/json',
+          },
+        ),
+      );
+
+      final nome = _extrairNome(response.data);
+      if (!mounted) return;
+
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          nome != null &&
+          nome.isNotEmpty) {
+        setState(() {
+          _nomeController.text = nome;
+          _ultimoCpfConsultado = cpf;
+        });
+      } else {
+        setState(() {
+          _nomeController.clear();
+          _ultimoCpfConsultado = null;
+          _errorMessage = 'CPF consultado, mas o nome não foi retornado.';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      String mensagem = 'Erro ao consultar CPF. Tente novamente.';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map) {
+          mensagem = data['message']?.toString() ??
+              data['error']?.toString() ??
+              data['detail']?.toString() ??
+              mensagem;
+        }
+      }
+
+      setState(() {
+        _nomeController.clear();
+        _ultimoCpfConsultado = null;
+        _errorMessage = mensagem;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isConsultingCpf = false;
+        });
+      }
+    }
   }
 
   String _gerarStringAleatoria(int tamanho) {
@@ -94,10 +228,14 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
           // Criar JSON para o QR code (mesmo formato)
           final jsonString = jsonEncode(body);
 
-          dynamic jsonFinal = {'qrcode': qrcodeString, 'validade': 1};
+          final jsonFinal = {
+            'qrcode': qrcodeString,
+            'id_condominio': idCondominio,
+            'validade': 1,
+          };
 
           setState(() {
-            _qrCodeData = jsonFinal.toString(); // 🔐 agora criptografado (hash)
+            _qrCodeData = jsonEncode(jsonFinal);
             _qrCodeString = qrcodeString;
             _isLoading = false;
           });
@@ -209,10 +347,13 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
 
   void _limparFormulario() {
     _nomeController.clear();
+    _cpfController.clear();
     setState(() {
       _qrCodeData = null;
       _qrCodeString = null;
       _errorMessage = null;
+      _isConsultingCpf = false;
+      _ultimoCpfConsultado = null;
     });
   }
 
@@ -259,7 +400,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
 
               Text(
                 _qrCodeData == null
-                    ? "Preencha o nome do visitante para gerar o QR code"
+                    ? "Digite o CPF do visitante para buscar o nome e gerar o QR Code"
                     : "Apresente este código na portaria",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -305,20 +446,84 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
                   ),
                 ),
 
-              // Campo Nome do Visitante
+              // Campo CPF do Visitante
               if (_qrCodeData == null) ...[
                 _buildInput(
-                  controller: _nomeController,
-                  hint: "Nome completo do visitante",
-                  icon: Icons.person_outline_rounded,
+                  controller: _cpfController,
+                  hint: "CPF do visitante",
+                  icon: Icons.badge_outlined,
                   color: blueColor,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [_CpfInputFormatter()],
+                  onChanged: _onCpfChanged,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Por favor, insira o nome do visitante';
+                      return 'Por favor, insira o CPF do visitante';
                     }
+
+                    final cpf = _apenasDigitos(value);
+                    if (cpf.length != 11) {
+                      return 'CPF deve ter 11 dígitos';
+                    }
+
+                    if (_isConsultingCpf) {
+                      return 'Aguarde a consulta do CPF';
+                    }
+
+                    if (_nomeController.text.trim().isEmpty) {
+                      return 'Não foi possível identificar o nome deste CPF';
+                    }
+
                     return null;
                   },
                 ),
+
+                const SizedBox(height: 12),
+
+                if (_isConsultingCpf)
+                  const Row(
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      SizedBox(width: 8),
+                      Text('Consultando CPF...'),
+                    ],
+                  ),
+
+                if (_nomeController.text.trim().isNotEmpty) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          color: Colors.green.shade700,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Nome encontrado: ${_nomeController.text.trim()}',
+                            style: TextStyle(
+                              color: Colors.green.shade700,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 20),
 
@@ -482,6 +687,9 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
     required IconData icon,
     required Color color,
     String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    void Function(String)? onChanged,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -498,6 +706,9 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
       child: TextFormField(
         controller: controller,
         validator: validator,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
+        onChanged: onChanged,
         style: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w500,
@@ -539,6 +750,49 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CpfInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > 11) {
+      digits = digits.substring(0, 11);
+    }
+
+    final buffer = StringBuffer();
+
+    if (digits.isNotEmpty) {
+      final first = digits.length >= 3 ? 3 : digits.length;
+      buffer.write(digits.substring(0, first));
+    }
+
+    if (digits.length > 3) {
+      final second = digits.length >= 6 ? 6 : digits.length;
+      buffer.write('.');
+      buffer.write(digits.substring(3, second));
+    }
+
+    if (digits.length > 6) {
+      final third = digits.length >= 9 ? 9 : digits.length;
+      buffer.write('.');
+      buffer.write(digits.substring(6, third));
+    }
+
+    if (digits.length > 9) {
+      buffer.write('-');
+      buffer.write(digits.substring(9));
+    }
+
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

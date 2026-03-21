@@ -31,8 +31,8 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white,
       body: Center(
         child: Image(
-          image: AssetImage('assets/logo/logo_condotop.png'),
-          height: 170,
+          image: AssetImage('assets/logo/logo_condotop_without_bckground.png'),
+          height: 200,
           fit: BoxFit.contain,
         ),
       ),

@@ -9,18 +9,16 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class RegistroOcorrenciaForm extends StatefulWidget {
-  const RegistroOcorrenciaForm({
-    super.key,
-    this.endpoint = '/reclamacoes/',
-    this.tituloTela = 'Registrar Reclamação',
-    this.dataField = 'data_reclamacao',
-    this.successMessage = 'Reclamação cadastrada com sucesso!',
-    this.descricaoValidatorMessage =
-        'Por favor, descreva o motivo da reclamação',
-    this.descricaoHint = 'Descreva o que aconteceu...',
-    this.errorFallbackMessage =
-        'Erro ao registrar reclamação. Tente novamente.',
-  });
+  const RegistroOcorrenciaForm(
+    // super.key,
+    this.endpoint,
+    this.tituloTela,
+    this.dataField,
+    this.successMessage,
+    this.descricaoValidatorMessage,
+    this.descricaoHint,
+    this.errorFallbackMessage,
+  );
 
   final String endpoint;
   final String tituloTela;
@@ -78,7 +76,11 @@ class _RegistroOcorrenciaFormState extends State<RegistroOcorrenciaForm> {
           'id_morador': idMorador,
           'urgencia': _urgencia,
           'descricao': descricao,
-          widget.dataField: DateTime.now().toIso8601String(),
+          '${widget.dataField}': DateTime.now().toIso8601String(),
+          // Campos adicionais esperados pela API (evitar 422)
+          'respondida': 0,
+          'resposta_sindico': '',
+          'data_resposta': null,
         };
 
         dynamic payload = body;
@@ -101,8 +103,7 @@ class _RegistroOcorrenciaFormState extends State<RegistroOcorrenciaForm> {
         print('📤 Enviando para API: $body');
 
         // Enviar para a API
-        final response =
-            await _apiService.post(widget.endpoint, payload, options: options);
+        final response = await _apiService.post(widget.endpoint, payload, options: options);
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           // Criar JSON para o QR code (mesmo formato)
@@ -128,8 +129,11 @@ class _RegistroOcorrenciaFormState extends State<RegistroOcorrenciaForm> {
         }
       } catch (e) {
         String errorMsg = widget.errorFallbackMessage;
-        if (e.toString().contains('DioException')) {
-          try {
+        print('❌ Erro na requisição: ${e.toString()}');
+        try {
+          if ((e as dynamic).response != null) {
+            print('🔍 Response status: ${(e as dynamic).response?.statusCode}');
+            print('🔍 Response data: ${(e as dynamic).response?.data}');
             final errorData = (e as dynamic).response?.data;
             if (errorData != null && errorData is Map) {
               errorMsg = errorData['message'] ??
@@ -137,8 +141,8 @@ class _RegistroOcorrenciaFormState extends State<RegistroOcorrenciaForm> {
                   errorData['detail'] ??
                   errorMsg;
             }
-          } catch (_) {}
-        }
+          }
+        } catch (_) {}
 
         setState(() {
           _isLoading = false;

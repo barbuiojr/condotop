@@ -37,7 +37,7 @@ class _AutorizarVisitanteState extends State<AutorizarVisitante> {
   String? _ultimoCpfConsultado;
 
   static const String _cpfApiKey =
-      'f6b935357bbfe79e6507d0a609d174dd6818daeac16df8e50a28d2937beca524';
+      '31ddf121ff9267b4850063e325c2138b7bad987004543248b7db08a9453a2e7f';
   final Dio _cpfDio = Dio(
     BaseOptions(
       connectTimeout: const Duration(seconds: 15),

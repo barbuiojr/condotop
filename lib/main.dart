@@ -9,35 +9,35 @@ import 'package:condotop/views/configurar_placa.dart';
 import 'package:condotop/views/login.dart';
 import 'package:condotop/views/redefinir_senha.dart';
 import 'package:condotop/views/splash_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  debugPrint('FCM background message: ${message.messageId}');
-}
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   await Firebase.initializeApp(
+//     options: DefaultFirebaseOptions.currentPlatform,
+//   );
+//   debugPrint('FCM background message: ${message.messageId}');
+// }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  await FcmTokenService.initialize();
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
+  // await FcmTokenService.initialize();
 
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    debugPrint('FCM foreground message: ${message.messageId}');
-  });
+  // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //   debugPrint('FCM foreground message: ${message.messageId}');
+  // });
 
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    debugPrint('FCM opened app: ${message.messageId}');
-  });
+  // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //   debugPrint('FCM opened app: ${message.messageId}');
+  // });
 
   // Configurar navigator key global para o interceptor
   ApiService.navigatorKey = GlobalKey<NavigatorState>();
@@ -62,9 +62,9 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        dialogTheme: const DialogTheme(
-          surfaceTintColor: Colors.transparent,
-        ),
+        // dialogTheme: const DialogTheme(
+        //   surfaceTintColor: Colors.transparent,
+        // ),
       ),
       locale: const Locale('pt', 'BR'),
       supportedLocales: const [

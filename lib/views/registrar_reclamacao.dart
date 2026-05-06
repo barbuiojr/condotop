@@ -7,13 +7,13 @@ class RegistrarReclamacao extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const RegistroOcorrenciaForm(
-      endpoint: '/reclamacoes/',
-      tituloTela: 'Registrar Reclamação',
-      dataField: 'data_reclamacao',
-      successMessage: 'Reclamação cadastrada com sucesso!',
-      descricaoValidatorMessage: 'Por favor, descreva o motivo da reclamação',
-      descricaoHint: 'Descreva o que aconteceu...',
-      errorFallbackMessage: 'Erro ao registrar reclamação. Tente novamente.',
+      '/reclamacoes/',
+      'Registrar Reclamação',
+      'data_reclamacao',
+      'Reclamação cadastrada com sucesso!',
+      'Por favor, descreva o motivo da reclamação',
+      'Descreva o que aconteceu...',
+      'Erro ao registrar reclamação. Tente novamente.',
     );
   }
 }

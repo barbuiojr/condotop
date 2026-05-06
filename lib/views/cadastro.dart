@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:dio/dio.dart';
 import 'package:condotop/utils/api.dart';
 import 'package:condotop/views/login.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 
 class Cadastro extends StatefulWidget {
   const Cadastro({super.key});
@@ -21,6 +22,20 @@ class _CadastroState extends State<Cadastro> {
   final _uhController = TextEditingController();
   final _senhaController = TextEditingController();
 
+  // CPF lookup (reused from autorizar_visitante flow)
+  static const String _cpfApiKey =
+      '31ddf121ff9267b4850063e325c2138b7bad987004543248b7db08a9453a2e7f';
+  final Dio _cpfDio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+    ),
+  );
+  bool _isConsultingCpf = false;
+  String? _ultimoCpfConsultado;
+  bool _nomeReadOnly = false;
+
   final _apiService = ApiService();
   bool _isLoading = false;
   bool _isLoadingCondominios = false;
@@ -29,6 +44,7 @@ class _CadastroState extends State<Cadastro> {
 
   List<dynamic> _condominios = [];
   dynamic _condominioSelecionado;
+  dynamic _isProprietario;
 
   @override
   void initState() {
@@ -100,6 +116,13 @@ class _CadastroState extends State<Cadastro> {
         return;
       }
 
+      if (_isProprietario == null) {
+        setState(() {
+          _errorMessage = 'Por favor, selecione se é proprietário ou inquilino';
+        });
+        return;
+      }
+
       setState(() {
         _isLoading = true;
         _errorMessage = null;
@@ -113,7 +136,7 @@ class _CadastroState extends State<Cadastro> {
 
         String fcmToken = '';
         try {
-          fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+          // fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
         } catch (_) {}
 
         final body = {
@@ -125,6 +148,7 @@ class _CadastroState extends State<Cadastro> {
           'bloco': _blocoController.text.trim(),
           'uh': _uhController.text.trim(), // UH deve ser string, não número
           'id_condominio': idCondominio,
+          'proprietario': _isProprietario ? 1 : 0,
           'senha': _senhaController.text,
           'fcm_token': fcmToken,
         };
@@ -136,7 +160,7 @@ class _CadastroState extends State<Cadastro> {
 
         final response = await _apiService.post('/moradores/cadastro', body);
 
-        if (response.statusCode == 200 || response.statusCode == 201) {
+          if (response.statusCode == 200 || response.statusCode == 201) {
           setState(() {
             _successMessage = 'Cadastro realizado com sucesso!';
             _isLoading = false;
@@ -164,7 +188,7 @@ class _CadastroState extends State<Cadastro> {
           try {
             final errorData = (e as dynamic).response?.data;
             if (errorData != null && errorData is Map) {
-              errorMsg = errorData['message'] ?? errorData['error'] ?? errorMsg;
+              errorMsg = errorData['message'] ?? errorData['error'] ?? errorData["detail"] ?? errorMsg;
             }
           } catch (_) {}
         }
@@ -172,6 +196,113 @@ class _CadastroState extends State<Cadastro> {
         setState(() {
           _errorMessage = errorMsg;
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String _apenasDigitos(String value) {
+    return value.replaceAll(RegExp(r'\D'), '');
+  }
+
+  void _onCpfChanged(String value) {
+    final cpf = _apenasDigitos(value);
+    if (cpf.length < 11) {
+      setState(() {
+        _nomeController.clear();
+        _ultimoCpfConsultado = null;
+        _nomeReadOnly = false;
+        _errorMessage = null;
+      });
+      return;
+    }
+
+    if (cpf == _ultimoCpfConsultado || _isConsultingCpf) return;
+
+    _consultarCpf(cpf);
+  }
+
+  Future<void> _consultarCpf(String cpf) async {
+    if (!mounted) return;
+    setState(() {
+      _isConsultingCpf = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await _cpfDio.get(
+        'https://apicpf.com/api/consulta',
+        queryParameters: {'cpf': cpf},
+        options: Options(headers: {
+          'X-API-KEY': _cpfApiKey,
+          'Accept': 'application/json',
+        }),
+      );
+
+      String? nome;
+      if (response.data != null) {
+        // tentar extrair nome de forma robusta (mesma lógica usada em autorizar_visitante)
+        dynamic data = response.data;
+        String? extractName(dynamic d) {
+          if (d is Map) {
+            const possibleKeys = ['nome', 'Nome', 'NOME', 'name'];
+            for (final key in possibleKeys) {
+              final value = d[key];
+              if (value is String && value.trim().isNotEmpty) return value.trim();
+            }
+            for (final v in d.values) {
+              final nested = extractName(v);
+              if (nested != null && nested.isNotEmpty) return nested;
+            }
+          }
+          if (d is List) {
+            for (final item in d) {
+              final nested = extractName(item);
+              if (nested != null && nested.isNotEmpty) return nested;
+            }
+          }
+          return null;
+        }
+
+        nome = extractName(data);
+      }
+
+      if ((response.statusCode == 200 || response.statusCode == 201) && nome != null && nome.isNotEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _nomeController.text = nome!;
+          _ultimoCpfConsultado = cpf;
+          _nomeReadOnly = true; // bloquear edição do nome
+        });
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _nomeController.clear();
+          _ultimoCpfConsultado = null;
+          _nomeReadOnly = false; // liberar edição em caso de falha
+          _errorMessage = 'CPF consultado, mas o nome não foi retornado.';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      String mensagem = 'Erro ao consultar CPF. Tente novamente.';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map) {
+          mensagem = data['message']?.toString() ?? data['error']?.toString() ?? data['detail']?.toString() ?? mensagem;
+        }
+      }
+
+      setState(() {
+        _nomeController.clear();
+        _ultimoCpfConsultado = null;
+        _nomeReadOnly = false; // liberar edição em caso de erro
+        _errorMessage = mensagem;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isConsultingCpf = false;
         });
       }
     }
@@ -299,43 +430,7 @@ class _CadastroState extends State<Cadastro> {
 
                 const SizedBox(height: 12),
 
-                // Campo Nome
-                _buildInput(
-                  controller: _nomeController,
-                  hint: "Nome completo",
-                  icon: Icons.person_outline_rounded,
-                  color: blueColor,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, insira seu nome';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-                // Campo Email
-                _buildInput(
-                  controller: _emailController,
-                  hint: "Email",
-                  icon: Icons.email_outlined,
-                  color: blueColor,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, insira seu email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Por favor, insira um email válido';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-                // Campo CPF
+                // Campo CPF (moved to be first after condomínio)
                 _buildInput(
                   controller: _cpfController,
                   hint: "CPF",
@@ -353,6 +448,44 @@ class _CadastroState extends State<Cadastro> {
                     final cpfDigits = value.replaceAll(RegExp(r'[^\d]'), '');
                     if (cpfDigits.length != 11) {
                       return 'CPF deve ter 11 dígitos';
+                    }
+                    return null;
+                  },
+                  onChanged: _onCpfChanged,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Campo Nome (moved to after CPF)
+                _buildInput(
+                  controller: _nomeController,
+                  hint: "Nome completo",
+                  icon: Icons.person_outline_rounded,
+                  color: blueColor,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, insira seu nome';
+                    }
+                    return null;
+                  },
+                  readOnly: _nomeReadOnly,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Campo Email (kept below Nome)
+                _buildInput(
+                  controller: _emailController,
+                  hint: "Email",
+                  icon: Icons.email_outlined,
+                  color: blueColor,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, insira seu email';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Por favor, insira um email válido';
                     }
                     return null;
                   },
@@ -434,6 +567,11 @@ class _CadastroState extends State<Cadastro> {
                     return null;
                   },
                 ),
+
+                const SizedBox(height: 12),
+
+                // Dropdown Proprietário/Inquilino
+                _buildProprietarioDropdown(blueColor),
 
                 const SizedBox(height: 20),
 
@@ -520,101 +658,74 @@ class _CadastroState extends State<Cadastro> {
   }
 
   Widget _buildCondominioDropdown(Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: DropdownButtonFormField<dynamic>(
-        value: _condominioSelecionado,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(
-              color: Colors.grey.shade200,
-              width: 1.5,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(
-              color: color,
-              width: 2,
-            ),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-          prefixIcon: Icon(
-            Icons.business_outlined,
-            color: color,
-            size: 22,
-          ),
-        ),
-        hint: Text(
-          _isLoadingCondominios
-              ? 'Carregando condomínios...'
-              : 'Selecione seu condomínio',
-          style: TextStyle(
-            color: Colors.grey.shade400,
-            fontSize: 15,
-          ),
-        ),
-        items: _condominios.map((condominio) {
-          // Tentar diferentes campos possíveis para o nome
-          final nome = condominio['nome'] ??
-              condominio['nome_condominio'] ??
-              condominio['condominio'] ??
-              condominio['descricao'] ??
-              condominio['razao_social'] ??
-              (condominio['id'] != null
-                  ? 'Condomínio ${condominio['id']}'
-                  : 'Condomínio');
+    // Substituído por campo de busca com sugestões filtradas
+    return _CondominioSearchField(
+      condominios: _condominios,
+      isLoading: _isLoadingCondominios,
+      onSelected: (value) {
+        setState(() {
+          _condominioSelecionado = value;
+          _errorMessage = null;
+        });
+      },
+    );
+  }
 
-          // Debug: imprimir o nome extraído
-          print(
-              '🏢 Nome extraído do condomínio: $nome (campos disponíveis: ${condominio.keys.toList()})');
-
-          return DropdownMenuItem<dynamic>(
-            value: condominio,
-            child: Text(
-              nome,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
+  Widget _buildProprietarioDropdown(Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DropdownButtonFormField<bool>(
+          value: _isProprietario,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(
+                color: Colors.grey.shade200,
+                width: 1.5,
               ),
             ),
-          );
-        }).toList(),
-        onChanged: _isLoadingCondominios
-            ? null
-            : (value) {
-                setState(() {
-                  _condominioSelecionado = value;
-                  _errorMessage = null;
-                });
-              },
-        validator: (value) {
-          if (value == null) {
-            return 'Por favor, selecione um condomínio';
-          }
-          return null;
-        },
-      ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(
+                color: color,
+                width: 2,
+              ),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
+            prefixIcon: Icon(
+              Icons.home_work_outlined,
+              color: color,
+              size: 22,
+            ),
+            hintText: 'Escolha uma opção', // Texto genérico para o hint
+          ),
+          items: const [
+            DropdownMenuItem<bool>(value: true, child: Text('Proprietário')),
+            DropdownMenuItem<bool>(value: false, child: Text('Inquilino')),
+          ],
+          onChanged: (v) {
+            setState(() {
+              _isProprietario = v!;
+              _errorMessage = null;
+            });
+          },
+          validator: (v) {
+            if (v == null) return 'Por favor, selecione proprietário ou inquilino';
+            return null;
+          },
+        ),
+        const SizedBox(height: 12),
+      ],
     );
   }
 
@@ -627,6 +738,8 @@ class _CadastroState extends State<Cadastro> {
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
+    bool readOnly = false,
+    void Function(String)? onChanged,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -643,6 +756,8 @@ class _CadastroState extends State<Cadastro> {
       child: TextFormField(
         controller: controller,
         obscureText: obscure,
+        readOnly: readOnly,
+        onChanged: onChanged,
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
         validator: validator,
@@ -688,6 +803,150 @@ class _CadastroState extends State<Cadastro> {
         ),
       ),
     );
+  }
+}
+
+// Widget de busca local para condomínios
+class _CondominioSearchField extends StatefulWidget {
+  final List<dynamic> condominios;
+  final bool isLoading;
+  final void Function(dynamic) onSelected;
+
+  const _CondominioSearchField({
+    required this.condominios,
+    required this.isLoading,
+    required this.onSelected,
+  });
+
+  @override
+  State<_CondominioSearchField> createState() => _CondominioSearchFieldState();
+}
+
+class _CondominioSearchFieldState extends State<_CondominioSearchField> {
+  final TextEditingController _ctrl = TextEditingController();
+  List<dynamic> _filtered = [];
+  bool _showSuggestions = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _filtered = widget.condominios;
+  }
+
+  @override
+  void didUpdateWidget(covariant _CondominioSearchField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _filtered = widget.condominios;
+  }
+
+  void _onChanged(String v) {
+    final q = v.toLowerCase();
+    setState(() {
+      _filtered = widget.condominios
+          .where((c) => (c['nome'] ?? c['descricao'] ?? c['condominio'] ?? '')
+              .toString()
+              .toLowerCase()
+              .contains(q))
+          .toList();
+      _showSuggestions = v.isNotEmpty && _filtered.isNotEmpty;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = const Color.fromARGB(225, 0, 68, 170);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: _ctrl,
+            onChanged: _onChanged,
+            readOnly: widget.isLoading,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Por favor, selecione um condomínio';
+              return null;
+            },
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(
+                  color: Colors.grey.shade200,
+                  width: 1.5,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(
+                  color: color,
+                  width: 2,
+                ),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              prefixIcon: Icon(
+                Icons.business_outlined,
+                color: color,
+                size: 22,
+              ),
+              hintText: widget.isLoading ? 'Carregando condomínios...' : 'Digite o nome do condomínio',
+            ),
+          ),
+        ),
+        if (_showSuggestions)
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            constraints: const BoxConstraints(maxHeight: 200),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _filtered.length,
+              itemBuilder: (context, i) {
+                final item = _filtered[i];
+                final nome = item['nome'] ?? item['descricao'] ?? item['condominio'] ?? 'Condomínio';
+                return ListTile(
+                  title: Text(nome.toString()),
+                  onTap: () {
+                    _ctrl.text = nome.toString();
+                    widget.onSelected(item);
+                    setState(() => _showSuggestions = false);
+                    FocusScope.of(context).unfocus();
+                  },
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
   }
 }
 

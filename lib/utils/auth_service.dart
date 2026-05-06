@@ -13,19 +13,19 @@ class AuthService {
   static const String _rememberedUsernameKey = 'remembered_username';
   static const String _rememberedPasswordKey = 'remembered_password';
 
-  Future<String> _resolveFcmTokenForSync() async {
-    for (var attempt = 0; attempt < 5; attempt++) {
-      final token = await FcmTokenService.fetchAndCacheToken(
-        debugSource: 'sync-${attempt + 1}',
-      );
-      if (token.isNotEmpty) {
-        return token;
-      }
-      await Future.delayed(Duration(seconds: attempt + 1));
-    }
+  // Future<String> _resolveFcmTokenForSync() async {
+  //   for (var attempt = 0; attempt < 5; attempt++) {
+  //     final token = await FcmTokenService.fetchAndCacheToken(
+  //       debugSource: 'sync-${attempt + 1}',
+  //     );
+  //     if (token.isNotEmpty) {
+  //       return token;
+  //     }
+  //     await Future.delayed(Duration(seconds: attempt + 1));
+  //   }
 
-    return '';
-  }
+  //   return '';
+  // }
 
   int? _extractMoradorIdFromResponse(Map<String, dynamic> data) {
     final directId = data['id_morador'] ?? data['idMorador'] ?? data['id'];
@@ -60,7 +60,7 @@ class AuthService {
       try {
         var token = initialToken;
         if (token.isEmpty) {
-          token = await _resolveFcmTokenForSync();
+          // token = await _resolveFcmTokenForSync();
         }
 
         if (token.isEmpty) {
@@ -90,16 +90,16 @@ class AuthService {
       final deviceLoginInfo = await getDeviceLoginInfo();
       print('📱 Informacoes do dispositivo no login: $deviceLoginInfo');
 
-      final fcmToken = await FcmTokenService.getTokenForLogin();
-      print('🔔 Login com fcm_token preenchido: ${fcmToken.isNotEmpty}');
-      print('🔔 fcm_token no login: $fcmToken');
+      // final fcmToken = await FcmTokenService.getTokenForLogin();
+      // print('🔔 Login com fcm_token preenchido: ${fcmToken.isNotEmpty}');
+      // print('🔔 fcm_token no login: $fcmToken');
 
       final response = await _apiService.post(
         '/auth/login',
         {
           'usuario': username,
           'senha': password,
-          'fcm_token': fcmToken,
+          'fcm_token': "",
         },
       );
 
@@ -152,7 +152,7 @@ class AuthService {
         print('💾 Dados a serem salvos na sessão: $userDataToSave');
 
         _sessionService.saveUserData(userDataToSave);
-        _syncFcmTokenInBackground(loginData: data, initialToken: fcmToken);
+        // _syncFcmTokenInBackground(loginData: data, initialToken: fcmToken);
 
         return {
           'success': true,

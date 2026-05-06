@@ -7,13 +7,13 @@ class RegistrarDefeito extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const RegistroOcorrenciaForm(
-      endpoint: '/defeitos/',
-      tituloTela: 'Registrar Defeito',
-      dataField: 'data_defeito',
-      successMessage: 'Defeito cadastrado com sucesso!',
-      descricaoValidatorMessage: 'Por favor, descreva o defeito',
-      descricaoHint: 'Descreva o defeito encontrado...',
-      errorFallbackMessage: 'Erro ao registrar defeito. Tente novamente.',
+      '/defeitos/',
+      'Registrar Defeito',
+      'data_defeito',
+      'Defeito cadastrado com sucesso!',
+      'Por favor, descreva o defeito',
+      'Descreva o defeito encontrado...',
+      'Erro ao registrar defeito. Tente novamente.',
     );
   }
 }

@@ -4,7 +4,7 @@ import 'package:condotop/views/login.dart';
 import 'package:flutter/material.dart';
 
 class ApiService {
-  static const String _defaultBaseUrl = 'http://192.168.0.150:8000/api';
+  static const String _defaultBaseUrl = 'http://192.168.100.224:8000/api';
   static const String _baseUrlFromEnv =
       String.fromEnvironment('BASE_URL', defaultValue: _defaultBaseUrl);
 
@@ -24,6 +24,24 @@ class ApiService {
       "Content-Type": "application/json",
     },
   ));
+
+  // Busca a lista de condomínios do backend
+  Future<List<Map<String, dynamic>>> getCondominios() async {
+    try {
+      final response = await dio.get('/condominios/');
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data is List) {
+          return List<Map<String, dynamic>>.from(response.data);
+        }
+        if (response.data is Map && response.data['data'] is List) {
+          return List<Map<String, dynamic>>.from(response.data['data']);
+        }
+      }
+    } catch (_) {
+      // ignorar e retornar lista vazia em caso de erro
+    }
+    return <Map<String, dynamic>>[];
+  }
 
   static GlobalKey<NavigatorState>? navigatorKey;
   final SessionService _sessionService = SessionService();

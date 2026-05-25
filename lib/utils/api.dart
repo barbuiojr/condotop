@@ -4,7 +4,7 @@ import 'package:condotop/views/login.dart';
 import 'package:flutter/material.dart';
 
 class ApiService {
-  static const String _defaultBaseUrl = 'http://192.168.100.224:8000/api';
+  static const String _defaultBaseUrl = 'http://5.161.55.209:8000/api';
   static const String _baseUrlFromEnv =
       String.fromEnvironment('BASE_URL', defaultValue: _defaultBaseUrl);
 
@@ -15,15 +15,17 @@ class ApiService {
     return _baseUrlFromEnv;
   }
 
-  final Dio dio = Dio(BaseOptions(
-    baseUrl: _resolvedBaseUrl,
-    connectTimeout: const Duration(seconds: 30),
-    receiveTimeout: const Duration(seconds: 30),
-    sendTimeout: const Duration(seconds: 30),
-    headers: const {
-      "Content-Type": "application/json",
-    },
-  ));
+  final Dio dio = Dio(
+    BaseOptions(
+      baseUrl: _resolvedBaseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+      headers: const {
+        "Content-Type": "application/json",
+      },
+    ),
+  );
 
   // Busca a lista de condomínios do backend
   Future<List<Map<String, dynamic>>> getCondominios() async {

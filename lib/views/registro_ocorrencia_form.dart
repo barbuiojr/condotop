@@ -103,7 +103,8 @@ class _RegistroOcorrenciaFormState extends State<RegistroOcorrenciaForm> {
         print('📤 Enviando para API: $body');
 
         // Enviar para a API
-        final response = await _apiService.post(widget.endpoint, payload, options: options);
+        final response =
+            await _apiService.post(widget.endpoint, payload, options: options);
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           // Criar JSON para o QR code (mesmo formato)
@@ -328,68 +329,68 @@ class _RegistroOcorrenciaFormState extends State<RegistroOcorrenciaForm> {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              // const SizedBox(height: 16),
 
-              Text(
-                "Foto (opcional)",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 45,
-                child: OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _selecionarFoto,
-                  icon: const Icon(Icons.add_a_photo_outlined),
-                  label: Text(
-                    _fotoReclamacao == null ? 'Adicionar foto' : 'Alterar foto',
-                  ),
-                ),
-              ),
-              if (_fotoReclamacao != null) ...[
-                const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Stack(
-                    children: [
-                      Image.file(
-                        _fotoReclamacao!,
-                        width: double.infinity,
-                        height: 180,
-                        fit: BoxFit.cover,
-                      ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: GestureDetector(
-                          onTap: _isLoading
-                              ? null
-                              : () {
-                                  setState(() {
-                                    _fotoReclamacao = null;
-                                  });
-                                },
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              // Text(
+              //   "Foto (opcional)",
+              //   style: TextStyle(
+              //     fontSize: 14,
+              //     fontWeight: FontWeight.w600,
+              //     color: Colors.grey.shade800,
+              //   ),
+              // ),
+              // const SizedBox(height: 8),
+              // SizedBox(
+              //   height: 45,
+              //   child: OutlinedButton.icon(
+              //     onPressed: _isLoading ? null : _selecionarFoto,
+              //     icon: const Icon(Icons.add_a_photo_outlined),
+              //     label: Text(
+              //       _fotoReclamacao == null ? 'Adicionar foto' : 'Alterar foto',
+              //     ),
+              //   ),
+              // ),
+              // if (_fotoReclamacao != null) ...[
+              //   const SizedBox(height: 10),
+              //   ClipRRect(
+              //     borderRadius: BorderRadius.circular(12),
+              //     child: Stack(
+              //       children: [
+              //         Image.file(
+              //           _fotoReclamacao!,
+              //           width: double.infinity,
+              //           height: 180,
+              //           fit: BoxFit.cover,
+              //         ),
+              //         Positioned(
+              //           top: 8,
+              //           right: 8,
+              //           child: GestureDetector(
+              //             onTap: _isLoading
+              //                 ? null
+              //                 : () {
+              //                     setState(() {
+              //                       _fotoReclamacao = null;
+              //                     });
+              //                   },
+              //             child: Container(
+              //               padding: const EdgeInsets.all(6),
+              //               decoration: BoxDecoration(
+              //                 color: Colors.black.withOpacity(0.6),
+              //                 shape: BoxShape.circle,
+              //               ),
+              //               child: const Icon(
+              //                 Icons.close,
+              //                 color: Colors.white,
+              //                 size: 18,
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ],
 
               const SizedBox(height: 16),
 
@@ -417,7 +418,7 @@ class _RegistroOcorrenciaFormState extends State<RegistroOcorrenciaForm> {
                   ),
                 ),
 
-              const SizedBox(height: 8),
+              // const SizedBox(height: 8),
 
               // Botão registrar
               SizedBox(

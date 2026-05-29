@@ -49,6 +49,7 @@ dependencies:
   # firebase_messaging: ^15.2.5
   flutter_blue_plus: ^1.35.5
   # device_preview: ^1.2.0
+  flutter_bluetooth_classic_serial: ^1.0.1
 
 dev_dependencies:
   flutter_test:

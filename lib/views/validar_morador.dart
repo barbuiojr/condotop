@@ -125,6 +125,10 @@ class _ValidarMoradorState extends State<ValidarMorador> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 255, 102, 1),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         centerTitle: true,
         title: Text(
           "Condotop",

@@ -315,20 +315,21 @@ class _ConfigurarPlacaState extends State<ConfigurarPlaca> {
         _isSending = true;
       });
 
-      final payload = {
-        'ssid': _ssidController.text.trim(),
-        'senha': _senhaController.text,
-      };
+      // final payload = {
+      //   'ssid': _ssidController.text.trim(),
+      //   'senha': _senhaController.text,
+      // };
 
-      final jsonString = jsonEncode(payload);
+      // final jsonString = jsonEncode(payload);
 
       print('==========================');
       print('ENVIANDO VIA BLUETOOTH');
-      print('SSID: ${_ssidController.text.trim()}');
-      print('SENHA: ${_senhaController.text}');
-      print('JSON: $jsonString');
-      print('BYTES: ${utf8.encode(jsonString)}');
+      print('WIFI:${_ssidController.text.trim()}');
+      print('PASSWORD:${_senhaController.text}');
+      // print('JSON: $jsonString');
+      // print('BYTES: ${utf8.encode(jsonString)}');
       print('==========================');
+      print('WIFI:${_ssidController.text};PASSWORD:${_senhaController.text}');
 
       // =====================================================
       // CLASSIC
@@ -336,7 +337,7 @@ class _ConfigurarPlacaState extends State<ConfigurarPlaca> {
 
       if (_classicConnected) {
         await _bluetoothClassic.sendString(
-          '$jsonString\n',
+          'WIFI:${_ssidController.text};PASSWORD:${_senhaController.text}',
         );
 
         AppSnackbar.showSuccess(
@@ -372,16 +373,15 @@ class _ConfigurarPlacaState extends State<ConfigurarPlaca> {
         }
 
         if (characteristic != null) {
-          await characteristic.write(
-            utf8.encode(jsonString),
-            withoutResponse: characteristic.properties.writeWithoutResponse,
-          );
+          // await characteristic.write(
+          //     // utf8.encode(jsonString),
+          //     // withoutResponse: characteristic.properties.writeWithoutResponse,
+          //     );
 
           AppSnackbar.showSuccess(
             context,
             'Wi-Fi enviado via BLE!',
           );
-
           return;
         }
       }
@@ -438,6 +438,10 @@ class _ConfigurarPlacaState extends State<ConfigurarPlaca> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: blueColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         centerTitle: true,
         title: const Text(
           'Configurar placa',

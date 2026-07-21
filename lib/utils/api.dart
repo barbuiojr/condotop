@@ -4,9 +4,10 @@ import 'package:condotop/views/login.dart';
 import 'package:flutter/material.dart';
 
 class ApiService {
+  static const String _defaultBaseUrlHomolog = 'http://localhost:8000/api';
   static const String _defaultBaseUrl = 'http://5.161.55.209:8000/api';
   static const String _baseUrlFromEnv =
-      String.fromEnvironment('BASE_URL', defaultValue: _defaultBaseUrl);
+      String.fromEnvironment('BASE_URL', defaultValue: _defaultBaseUrlHomolog);
 
   static String get _resolvedBaseUrl {
     if (_baseUrlFromEnv.endsWith('/')) {
@@ -79,10 +80,11 @@ class ApiService {
           // Se token expirou → limpar sessão e redirecionar para login
           // Mas não redirecionar se já estiver na rota de login (evita loop e recarregamento)
           if (error.response?.statusCode == 401) {
-            final isLoginRoute =
-                error.requestOptions.path.contains('/auth/login');
+            final isPublicRoute =
+                error.requestOptions.path.contains('/auth/login') ||
+                error.requestOptions.path.contains('/moradores/cadastro');
 
-            if (!isLoginRoute) {
+            if (!isPublicRoute) {
               _sessionService.clearSession();
 
               // Redirecionar para login se tiver navigator key e não estiver na rota de login

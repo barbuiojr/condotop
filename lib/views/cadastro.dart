@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:condotop/utils/api.dart';
-import 'package:condotop/views/login.dart';
+import 'package:condotop/views/confirmar_email.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 
 class Cadastro extends StatefulWidget {
@@ -160,18 +160,14 @@ class _CadastroState extends State<Cadastro> {
 
         final response = await _apiService.post('/moradores/cadastro', body);
 
-          if (response.statusCode == 200 || response.statusCode == 201) {
-          setState(() {
-            _successMessage = 'Cadastro realizado com sucesso!';
-            _isLoading = false;
-          });
-
-          // Aguardar um pouco e redirecionar para login
-          await Future.delayed(const Duration(seconds: 2));
-
+        if (response.statusCode == 200 || response.statusCode == 201) {
           if (mounted) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const Login()),
+              MaterialPageRoute(
+                builder: (context) => ConfirmarEmail(
+                  email: _emailController.text.trim(),
+                ),
+              ),
             );
           }
         } else {

@@ -1,3 +1,4 @@
+import 'package:condotop/utils/api.dart';
 import 'package:condotop/utils/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,11 +13,30 @@ class RecuperarSenhaEmail extends StatefulWidget {
 class _RecuperarSenhaEmailState extends State<RecuperarSenhaEmail> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _apiService = ApiService();
 
   @override
   void dispose() {
     _emailController.dispose();
     super.dispose();
+  }
+
+  Future<void> enviarEmail() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    await _apiService.post('/auth/forgot-password/request', {
+      'email': _emailController.text.trim(),
+    });
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => RecuperarSenhaOtp(
+          email: _emailController.text.trim(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -82,18 +102,12 @@ class _RecuperarSenhaEmailState extends State<RecuperarSenhaEmail> {
               SizedBox(
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (!_formKey.currentState!.validate()) {
                       return;
                     }
 
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => RecuperarSenhaOtp(
-                          email: _emailController.text.trim(),
-                        ),
-                      ),
-                    );
+                    await enviarEmail();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: orangeColor,
@@ -208,6 +222,7 @@ class _RecuperarSenhaOtpState extends State<RecuperarSenhaOtp> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   String? _errorMessage;
   bool _isNavigating = false;
+  final _apiService = ApiService();
 
   @override
   void dispose() {
@@ -229,24 +244,24 @@ class _RecuperarSenhaOtpState extends State<RecuperarSenhaOtp> {
     return otp.length == 6 && RegExp(r'^\d{6}$').hasMatch(otp);
   }
 
-  void _goToNextStep() {
-    if (_isNavigating) {
-      return;
-    }
+  // void _goToNextStep() {
+  //   if (_isNavigating) {
+  //     return;
+  //   }
 
-    _isNavigating = true;
-    Navigator.of(context)
-        .push(
-      MaterialPageRoute(
-        builder: (context) => const RecuperarSenhaNovaSenha(),
-      ),
-    )
-        .then((_) {
-      if (mounted) {
-        _isNavigating = false;
-      }
-    });
-  }
+  //   _isNavigating = true;
+  //   Navigator.of(context)
+  //       .push(
+  //     MaterialPageRoute(
+  //       builder: (context) => const RecuperarSenhaNovaSenha(resetToken: ,),
+  //     ),
+  //   )
+  //       .then((_) {
+  //     if (mounted) {
+  //       _isNavigating = false;
+  //     }
+  //   });
+  // }
 
   void _validarEContinuar() {
     if (!_isOtpValido()) {
@@ -255,8 +270,6 @@ class _RecuperarSenhaOtpState extends State<RecuperarSenhaOtp> {
       });
       return;
     }
-
-    _goToNextStep();
   }
 
   void _applyPastedOtp(String value) {
@@ -276,6 +289,45 @@ class _RecuperarSenhaOtpState extends State<RecuperarSenhaOtp> {
     });
 
     _validarEContinuar();
+  }
+
+  Future<void> _confirmarOtp(String otp) async {
+    setState(() {
+      // _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await _apiService.post(
+        '/auth/forgot-password/verify-otp',
+        {
+          'email': widget.email,
+          'otp': otp,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+              builder: (_) => RecuperarSenhaNovaSenha(
+                  resetToken: response.data["reset_token"].toString())),
+          (route) => false,
+        );
+        return;
+      }
+
+      setState(() {
+        // _errorMessage = _messageFrom(response.data) ?? 'Não foi possível confirmar o código.';
+        // _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        // _errorMessage = _messageFrom(_responseDataFrom(e)) ??
+        //     'Não foi possível confirmar o código. Tente novamente.';
+        // _isLoading = false;
+      });
+    }
   }
 
   Widget _buildOtpBox(int index, Color blueColor) {
@@ -316,6 +368,7 @@ class _RecuperarSenhaOtpState extends State<RecuperarSenhaOtp> {
         onChanged: (value) {
           if (value.length > 1) {
             _applyPastedOtp(value);
+            print("fim");
             return;
           }
 
@@ -330,6 +383,10 @@ class _RecuperarSenhaOtpState extends State<RecuperarSenhaOtp> {
           if (value.isNotEmpty && index == _focusNodes.length - 1) {
             _focusNodes[index].unfocus();
             _validarEContinuar();
+
+            // aqui vai chamar o metodo de validação do OTP, que você pode implementar conforme sua lógica
+
+            _confirmarOtp(_otpControllers.map((c) => c.text).join().toString());
           }
 
           if (value.isEmpty && index > 0) {
@@ -411,7 +468,8 @@ class _RecuperarSenhaOtpState extends State<RecuperarSenhaOtp> {
 }
 
 class RecuperarSenhaNovaSenha extends StatefulWidget {
-  const RecuperarSenhaNovaSenha({super.key});
+  final String resetToken;
+  const RecuperarSenhaNovaSenha({super.key, required this.resetToken});
 
   @override
   State<RecuperarSenhaNovaSenha> createState() =>
@@ -425,6 +483,8 @@ class _RecuperarSenhaNovaSenhaState extends State<RecuperarSenhaNovaSenha> {
 
   bool _isLoading = false;
   String? _errorMessage;
+
+  final _apiService = ApiService();
 
   @override
   void dispose() {
@@ -449,13 +509,29 @@ class _RecuperarSenhaNovaSenhaState extends State<RecuperarSenhaNovaSenha> {
       return;
     }
 
+    if (_novaSenhaController.text.length < 8) {
+      setState(() {
+        _errorMessage = 'A nova senha deve ter pelo menos 8 caracteres';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    dynamic response = await _apiService.post('/auth/forgot-password/reset', {
+      'reset_token': widget.resetToken,
+      'nova_senha': _novaSenhaController.text.trim(),
+    });
+
     setState(() {
       _isLoading = false;
     });
 
-    AppSnackbar.showSuccess(context, 'Senha redefinida com sucesso!');
-
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      if (!mounted) return;
+      AppSnackbar.showSuccess(context, 'Senha redefinida com sucesso!');
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      return;
+    }
   }
 
   @override

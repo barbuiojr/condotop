@@ -4,7 +4,7 @@ import 'package:condotop/views/login.dart';
 import 'package:flutter/material.dart';
 
 class ApiService {
-  static const String _defaultBaseUrlHomolog = 'http://localhost:8000/api';
+  static const String _defaultBaseUrlHomolog = 'http://192.168.100.217:8000/api';
   static const String _defaultBaseUrl = 'http://5.161.55.209:8000/api';
   static const String _baseUrlFromEnv =
       String.fromEnvironment('BASE_URL', defaultValue: _defaultBaseUrlHomolog);

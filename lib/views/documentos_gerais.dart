@@ -310,20 +310,20 @@ class _DocumentosGeraisState extends State<DocumentosGerais> {
                       );
                     },
                   ),
-                  const SizedBox(height: 12),
-                  _buildPrimaryButton(
-                    title: 'Configurar placa',
-                    icon: Icons.bluetooth_connected_rounded,
-                    color: blueColor,
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const ConfigurarPlaca(),
-                        ),
-                      );
-                    },
-                  ),
                   if (isSindico) ...[
+                    const SizedBox(height: 12),
+                    _buildPrimaryButton(
+                      title: 'Configurar placa',
+                      icon: Icons.bluetooth_connected_rounded,
+                      color: blueColor,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ConfigurarPlaca(),
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 12),
                     _buildPrimaryButton(
                       title: 'Validar morador',
